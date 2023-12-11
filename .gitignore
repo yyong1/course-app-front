@@ -12,7 +12,6 @@ dist
 dist-ssr
 *.local
 
-# Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -22,22 +21,16 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-# Файлы и директории IDE JetBrains (WebStorm, IntelliJ и др.)
-.idea/
 *.iml
 
 # Директории кэша и логов
 logs/
 cache/
 
-# Файлы сборки Node
 node_modules/
 
-# Сборочные файлы
 /dist/
 
-# Файлы локальных настроек
 .env.local
 .env.development.local
 .env.test.local
