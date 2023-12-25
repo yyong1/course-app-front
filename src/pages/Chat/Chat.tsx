@@ -1,30 +1,15 @@
 import React, { useState } from 'react';
-import {
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Grid,
-  Paper,
-  List,
-  ListItem,
-  ListItemAvatar,
-  Avatar,
-  ListItemText,
-} from '@mui/material';
+import { Box, TextField, Button, Grid, List } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
+import { Message } from '../../utils/types.ts';
+import MessageComponent from '../../components/ChatComponents/MessageComponent.tsx';
+import UserCell from '../../components/ChatComponents/UserCell.tsx';
 
 const initialMessages = [
   { id: 1, text: 'Hi there!', sender: 'bot' },
   { id: 2, text: 'Hello!', sender: 'user' },
   { id: 3, text: 'How can I assist you today?', sender: 'bot' },
 ];
-
-interface Message {
-  id: number;
-  text: string;
-  sender: string;
-}
 
 function Chat() {
   const [input, setInput] = useState<string>('');
@@ -46,24 +31,12 @@ function Chat() {
     <Grid container spacing={2}>
       <Grid item xs={3}>
         <List>
-          {/* user cell */}
-          <ListItem alignItems="flex-start">
-            <ListItemAvatar>
-              <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
-            </ListItemAvatar>
-            <ListItemText
-              primary="Brunch this weekend?"
-              secondary={
-                <React.Fragment>
-                  <Typography sx={{ display: 'inline' }} component="span" variant="body2" color="text.primary">
-                    Ali Connors
-                  </Typography>
-                  {" — I'll be in your neighborhood doing errands this…"}
-                </React.Fragment>
-              }
-            />
-          </ListItem>
-          {/* user cell */}
+          <UserCell
+            name="Remy Sharp"
+            avatarSrc="/static/images/avatar/1.jpg"
+            primaryText="Brunch this weekend?"
+            secondaryText="I'll be in your neighborhood doing errands this…"
+          />
         </List>
       </Grid>
       <Grid item xs={9}>
@@ -112,27 +85,27 @@ function Chat() {
   );
 }
 
-const MessageComponent: React.FC<{ message: Message }> = ({ message }) => {
-  return (
-    <Box
-      sx={{
-        display: 'flex',
-        justifyContent: message.sender === 'bot' ? 'flex-start' : 'flex-end',
-        mb: 2,
-      }}
-    >
-      <Paper
-        variant="outlined"
-        sx={{
-          p: 2,
-          backgroundColor: message.sender === 'bot' ? 'primary.light' : 'secondary.light',
-          borderRadius: message.sender === 'bot' ? '20px 20px 20px 5px' : '20px 20px 5px 20px',
-        }}
-      >
-        <Typography variant="body1">{message.text}</Typography>
-      </Paper>
-    </Box>
-  );
-};
+// const MessageComponent: React.FC<{ message: Message }> = ({ message }) => {
+//   return (
+//     <Box
+//       sx={{
+//         display: 'flex',
+//         justifyContent: message.sender === 'bot' ? 'flex-start' : 'flex-end',
+//         mb: 2,
+//       }}
+//     >
+//       <Paper
+//         variant="outlined"
+//         sx={{
+//           p: 2,
+//           backgroundColor: message.sender === 'bot' ? 'primary.light' : 'secondary.light',
+//           borderRadius: message.sender === 'bot' ? '20px 20px 20px 5px' : '20px 20px 5px 20px',
+//         }}
+//       >
+//         <Typography variant="body1">{message.text}</Typography>
+//       </Paper>
+//     </Box>
+//   );
+// };
 
 export default Chat;
