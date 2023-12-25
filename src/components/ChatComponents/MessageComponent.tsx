@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import { Paper, Typography } from '@mui/material';
 import React from 'react';
-import { Message } from '../../utils/types.ts';
+import { Message } from '../../utils/types';
 
 const MessageComponent: React.FC<{ message: Message }> = ({ message }) => {
   return (

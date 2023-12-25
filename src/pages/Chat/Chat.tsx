@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button, Grid, List } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
-import { Message } from '../../utils/types.ts';
-import MessageComponent from '../../components/ChatComponents/MessageComponent.tsx';
-import UserCell from '../../components/ChatComponents/UserCell.tsx';
+import { Message } from '../../utils/types/types.ts';
+import { UserCell, MessageComponent } from '../../components/ChatComponents';
 
 const initialMessages = [
   { id: 1, text: 'Hi there!', sender: 'bot' },
