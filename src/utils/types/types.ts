@@ -3,3 +3,9 @@ export default interface Message {
   text: string;
   sender: string;
 }
+
+export interface Course {
+  id: number;
+  name: string;
+  discription: string;
+}
