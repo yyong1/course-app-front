@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, TextField, Button, Grid, List } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import Message from '../../utils/types/types.ts';
 import { UserCell, MessageComponent } from '../../components/ChatComponents';
+import { MessageService } from '../../services';
+import useMessage from '../../hooks/useMessage.ts';
 
 const initialMessages = [
   { id: 1, text: 'Hi there!', sender: 'bot' },
@@ -13,6 +15,11 @@ const initialMessages = [
 function Chat() {
   const [input, setInput] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>(initialMessages);
+
+  const {
+    data: useMsgQuery,
+    // error, isLoading, isError, refetch
+  } = useMessage();
 
   const handleSend = () => {
     if (input.trim() !== '') {
@@ -25,6 +32,19 @@ function Chat() {
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInput(event.target.value);
   };
+
+  useEffect(() => {
+    MessageService.getMessage()
+      .then((res) => {
+        console.log(res);
+        const text = typeof res === 'string' ? res : JSON.stringify(res);
+        const newMessage = { id: messages.length + 1, text: text, sender: '' };
+        setMessages([...messages, newMessage]);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
 
   return (
     <Grid container spacing={2}>
@@ -48,7 +68,7 @@ function Chat() {
           }}
         >
           <Box sx={{ flexGrow: 1, overflow: 'auto', p: 2 }}>
-            {messages.map((message) => (
+            {(messages || useMsgQuery).map((message) => (
               <MessageComponent key={message.id} message={message} />
             ))}
           </Box>
@@ -83,28 +103,5 @@ function Chat() {
     </Grid>
   );
 }
-
-// const MessageComponent: React.FC<{ message: Message }> = ({ message }) => {
-//   return (
-//     <Box
-//       sx={{
-//         display: 'flex',
-//         justifyContent: message.sender === 'bot' ? 'flex-start' : 'flex-end',
-//         mb: 2,
-//       }}
-//     >
-//       <Paper
-//         variant="outlined"
-//         sx={{
-//           p: 2,
-//           backgroundColor: message.sender === 'bot' ? 'primary.light' : 'secondary.light',
-//           borderRadius: message.sender === 'bot' ? '20px 20px 20px 5px' : '20px 20px 5px 20px',
-//         }}
-//       >
-//         <Typography variant="body1">{message.text}</Typography>
-//       </Paper>
-//     </Box>
-//   );
-// };
 
 export default Chat;
