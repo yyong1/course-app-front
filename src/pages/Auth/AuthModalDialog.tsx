@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import Button from '@mui/joy/Button';
 import FormControl from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
@@ -8,23 +8,25 @@ import ModalDialog from '@mui/joy/ModalDialog';
 import DialogTitle from '@mui/joy/DialogTitle';
 import DialogContent from '@mui/joy/DialogContent';
 import Stack from '@mui/joy/Stack';
-import Add from '@mui/icons-material/Add';
+import { useAppDispatch, useAppSelector } from '../../redux/hooks';
+import { closeAuthModal } from '../../redux/reducers/features/modalFeature/modalSlice.ts';
 
-export default function BasicModalDialog() {
-  const [open, setOpen] = useState<boolean>(false);
+function AuthModalDialog() {
+  const dispatch = useAppDispatch();
+  const isOpen = useAppSelector((state) => state.modal.isOpen);
+  useEffect(() => {
+    console.log('AuthModalDialog is rendered', isOpen);
+  }, [isOpen]);
   return (
     <React.Fragment>
-      <Button variant="outlined" color="neutral" startDecorator={<Add />} onClick={() => setOpen(true)}>
-        New project
-      </Button>
-      <Modal open={open} onClose={() => setOpen(false)}>
+      <Modal open={isOpen} onClose={() => dispatch(closeAuthModal())}>
         <ModalDialog>
           <DialogTitle>Create new project</DialogTitle>
           <DialogContent>Fill in the information of the project.</DialogContent>
           <form
             onSubmit={(event: React.FormEvent<HTMLFormElement>) => {
               event.preventDefault();
-              setOpen(false);
+              dispatch(closeAuthModal());
             }}
           >
             <Stack spacing={2}>
@@ -44,3 +46,5 @@ export default function BasicModalDialog() {
     </React.Fragment>
   );
 }
+
+export default AuthModalDialog;

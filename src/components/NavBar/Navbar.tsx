@@ -12,7 +12,8 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
-import { useAppSelector } from '../../redux/hooks.ts';
+import { openAuthModal, closeAuthModal } from '../../redux/reducers/features/modalFeature/modalSlice.ts';
+import { useAppDispatch, useAppSelector } from '../../redux/hooks.ts';
 
 const pages = ['Courses', 'Pricing', 'Blog'];
 const settings = ['Profile', 'Account', 'Logout'];
@@ -21,6 +22,7 @@ function ResponsiveAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
 
+  const dispatch = useAppDispatch();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -123,7 +125,28 @@ function ResponsiveAppBar() {
               </Button>
             ))}
           </Box>
-          {!isAuthenticated && <Button variant="contained">Contained</Button>}
+          {!isAuthenticated && (
+            <>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  dispatch(openAuthModal());
+                  console.log('ggg');
+                }}
+              >
+                Sign in
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  dispatch(closeAuthModal());
+                  console.log('ggg');
+                }}
+              >
+                Sign up
+              </Button>
+            </>
+          )}
           {isAuthenticated && (
             <Box sx={{ flexGrow: 0 }}>
               <Tooltip title="Open settings">
