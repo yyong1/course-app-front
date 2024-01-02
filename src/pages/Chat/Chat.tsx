@@ -3,8 +3,10 @@ import { Box, TextField, Button, Grid, List } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import Message from '../../utils/types/types.ts';
 import { UserCell, MessageComponent } from '../../components/ChatComponents';
-import { MessageService } from '../../services';
-import useMessage from '../../hooks/useMessage.ts';
+import { WebSocketService } from '../../services';
+// eslint-disable-next-line import/no-unresolved
+import { IMessage } from '@stomp/stompjs'; // Ensure you have this import
+// import useMessage from '../../hooks/useMessage.ts';
 
 const initialMessages = [
   { id: 1, text: 'Hi there!', sender: 'bot' },
@@ -16,15 +18,33 @@ function Chat() {
   const [input, setInput] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>(initialMessages);
 
-  const {
-    data: useMsgQuery,
-    // error, isLoading, isError, refetch
-  } = useMessage();
+  // Assuming useMessage is a custom hook for fetching messages
+  // const { data: messageData /*, error, isLoading, isError, refetch */ } = useMessage();
+
+  // This function will handle incoming WebSocket messages
+  const handleIncomingMessage = (incomingMsg: IMessage) => {
+    // Assuming you need to convert IMessage to your Message format
+    const msg: Message = {
+      id: messages.length + 1, // or some other logic to assign a unique ID
+      text: incomingMsg.body, // Assuming that the text of the message is in the body property
+      sender: 'user', // You'll need to determine how to set the sender
+    };
+
+    // Now you can use the converted message in your state update
+    setMessages((prevMessages) => [...prevMessages, msg]);
+  };
+
+  useEffect(() => {
+    WebSocketService.connect(handleIncomingMessage); // Используйте экземпляр, а не класс
+
+    return () => {
+      WebSocketService.disconnect(); // Используйте экземпляр, а не класс
+    };
+  }, []);
 
   const handleSend = () => {
     if (input.trim() !== '') {
-      const newMessage = { id: messages.length + 1, text: input, sender: 'user' };
-      setMessages([...messages, newMessage]);
+      WebSocketService.sendMessage('/message', input); // Используйте экземпляр, а не класс
       setInput('');
     }
   };
@@ -32,19 +52,18 @@ function Chat() {
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInput(event.target.value);
   };
-
-  useEffect(() => {
-    MessageService.getMessage()
-      .then((res) => {
-        console.log(res);
-        const text = typeof res === 'string' ? res : JSON.stringify(res);
-        const newMessage = { id: messages.length + 1, text: text, sender: '' };
-        setMessages([...messages, newMessage]);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, []);
+  // useEffect(() => {
+  //   MessageService.getMessage()
+  //     .then((res) => {
+  //       console.log(res);
+  //       const text = typeof res === 'string' ? res : JSON.stringify(res);
+  //       const newMessage = { id: messages.length + 1, text: text, sender: '' };
+  //       setMessages([...messages, newMessage]);
+  //     })
+  //     .catch((err) => {
+  //       console.log(err);
+  //     });
+  // }, []);
 
   return (
     <Grid container spacing={2}>
@@ -68,9 +87,12 @@ function Chat() {
           }}
         >
           <Box sx={{ flexGrow: 1, overflow: 'auto', p: 2 }}>
-            {(messages || useMsgQuery).map((message) => (
-              <MessageComponent key={message.id} message={message} />
-            ))}
+            {
+              // || useMsgQuery
+              messages.map((message) => (
+                <MessageComponent key={message.id} message={message} />
+              ))
+            }
           </Box>
           <Box sx={{ p: 2, backgroundColor: 'background.default' }}>
             <Grid container spacing={2}>
