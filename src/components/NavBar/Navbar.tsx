@@ -14,6 +14,9 @@ import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import { openAuthModal, closeAuthModal } from '../../redux/reducers/features/modalFeature/modalSlice.ts';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks.ts';
+// import { SvgIcon } from '@mui/joy';
+
+import Logo from '../../assets/learnForge.svg';
 
 const pages = ['Courses', 'Pricing', 'Blog'];
 const settings = ['Profile', 'Account', 'Logout'];
@@ -44,7 +47,21 @@ function ResponsiveAppBar() {
     <AppBar position="static">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
+          <Box
+            sx={{
+              display: { xs: 'none', md: 'flex' },
+              mr: 1,
+              p: 1,
+              borderRadius: '50%',
+              width: (theme) => theme.spacing(7),
+              height: (theme) => theme.spacing(7),
+              backgroundColor: 'primary.main',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <img src={Logo} alt="Your SVG" style={{ width: '100%', height: 'auto' }} />
+          </Box>
           <Typography
             variant="h6"
             noWrap
@@ -60,7 +77,7 @@ function ResponsiveAppBar() {
               textDecoration: 'none',
             }}
           >
-            Course App
+            LearnForge
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
@@ -99,7 +116,8 @@ function ResponsiveAppBar() {
               ))}
             </Menu>
           </Box>
-          <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
+
+          <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 10 }} />
           <Typography
             variant="h5"
             noWrap
@@ -116,7 +134,7 @@ function ResponsiveAppBar() {
               textDecoration: 'none',
             }}
           >
-            Course App
+            Learn Forge
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
             {pages.map((page) => (
@@ -126,9 +144,9 @@ function ResponsiveAppBar() {
             ))}
           </Box>
           {!isAuthenticated && (
-            <>
+            <Box sx={{ flexGrow: 0 }}>
               <Button
-                variant="contained"
+                color="inherit"
                 onClick={() => {
                   dispatch(openAuthModal());
                   console.log('ggg');
@@ -137,7 +155,7 @@ function ResponsiveAppBar() {
                 Sign in
               </Button>
               <Button
-                variant="contained"
+                color="inherit"
                 onClick={() => {
                   dispatch(closeAuthModal());
                   console.log('ggg');
@@ -145,7 +163,7 @@ function ResponsiveAppBar() {
               >
                 Sign up
               </Button>
-            </>
+            </Box>
           )}
           {isAuthenticated && (
             <Box sx={{ flexGrow: 0 }}>
