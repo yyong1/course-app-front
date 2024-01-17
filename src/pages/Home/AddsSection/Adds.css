@@ -1,0 +1,39 @@
+.body {
+    display: flex;
+    padding: 2.5rem; /* 1 rem typically equals 16px */
+    margin: 0 3.75rem; /* Converts to 60px if base font-size is 16px */
+    justify-content: space-between;
+}
+
+.bodyContent {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 40%;
+    text-align: left;
+}
+
+.bodyContentIntro {
+    font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+    font-size: 3.125rem; /* Equivalent to 50px */
+    text-align: left;
+}
+
+.bodyContentSub {
+    font-weight: 350;
+    font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+}
+
+.buttonStyle {
+    background-color: #007ffc;
+    border-radius: 0.5rem; /* 8px */
+    opacity: 100%;
+    color: white;
+}
+
+.slideshowStyles {
+    width: 30vw; /* 30% of the viewport width */
+    /* The height can be set as a percentage of width to maintain aspect ratio */
+    /* Alternatively, height could be omitted to allow the content to dictate the space */
+    margin-top: 3.75rem; /* Converts to 60px if base font-size is 16px */
+}

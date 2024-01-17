@@ -28,7 +28,7 @@ function Carousel() {
     setCards(duplicateCards);
   }, []);
 
-  let containerWidth;
+  const containerWidth = cardsPerPage * 250;
   return (
     <Box
       sx={{
@@ -50,7 +50,7 @@ function Carousel() {
         {/* this is the box that holds the cards and the slide animation,
         in this implementation the card is already constructed but in later versions you will see how the
         items you wish to use will be dynamically created with the map method*/}
-        {cards.map((card, index) => (
+        {cards.map((_card, index) => (
           <Box
             key={`card-${index}`}
             sx={{
