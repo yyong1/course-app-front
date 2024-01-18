@@ -1,24 +1,28 @@
 import * as React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import Menu from '@mui/material/Menu';
-import MenuIcon from '@mui/icons-material/Menu';
-import Container from '@mui/material/Container';
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
-import MenuItem from '@mui/material/MenuItem';
+import {
+  Typography,
+  Menu,
+  Container,
+  IconButton,
+  Toolbar,
+  Box,
+  AppBar,
+  Avatar,
+  Button,
+  Tooltip,
+  MenuItem,
+} from '@mui/material';
 import AdbIcon from '@mui/icons-material/Adb';
+import MenuIcon from '@mui/icons-material/Menu';
 import { openAuthModal, closeAuthModal } from '../../redux/reducers/features/modalFeature/modalSlice.ts';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks.ts';
-// import { SvgIcon } from '@mui/joy';
-
 import Logo from '../../assets/learnForge.svg';
+import { Link } from 'react-router-dom';
 
-const pages = ['Courses', 'Pricing', 'Blog'];
+const pages = [
+  { name: 'Our courses', path: '/courses' },
+  { name: 'About', path: '/about' },
+];
 const settings = ['Profile', 'Account', 'Logout'];
 
 function ResponsiveAppBar() {
@@ -66,7 +70,7 @@ function ResponsiveAppBar() {
             variant="h6"
             noWrap
             component="a"
-            href="#app-bar-with-responsive-menu"
+            href="/"
             sx={{
               mr: 2,
               display: { xs: 'none', md: 'flex' },
@@ -110,9 +114,11 @@ function ResponsiveAppBar() {
               }}
             >
               {pages.map((page) => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Typography textAlign="center">{page}</Typography>
-                </MenuItem>
+                <Button key={page.name} sx={{ my: 2, color: 'white', display: 'block' }}>
+                  <Link to={page.path} style={{ textDecoration: 'none', color: 'white' }}>
+                    {page.name}
+                  </Link>
+                </Button>
               ))}
             </Menu>
           </Box>
@@ -122,7 +128,7 @@ function ResponsiveAppBar() {
             variant="h5"
             noWrap
             component="a"
-            href="#app-bar-with-responsive-menu"
+            href="/"
             sx={{
               mr: 2,
               display: { xs: 'flex', md: 'none' },
@@ -138,8 +144,10 @@ function ResponsiveAppBar() {
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
             {pages.map((page) => (
-              <Button key={page} onClick={handleCloseNavMenu} sx={{ my: 2, color: 'white', display: 'block' }}>
-                {page}
+              <Button key={page.name} sx={{ my: 2, color: 'white', display: 'block' }}>
+                <Link to={page.path} style={{ textDecoration: 'none', color: 'white' }}>
+                  {page.name}
+                </Link>
               </Button>
             ))}
           </Box>
