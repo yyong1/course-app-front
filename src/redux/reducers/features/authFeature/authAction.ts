@@ -13,6 +13,17 @@ export const login = (username: string, password: string) => async (dispatch: Ap
   }
 };
 
+export const register =
+  (username: string, password: string, email: string, role: string) => async (dispatch: AppDispatch) => {
+    try {
+      const { data } = await axios.post('/api/register', { username, password, email, role });
+      dispatch(userLoaded(data.user));
+      localStorage.setItem('token', data.token);
+    } catch (error) {
+      console.error('Login failed:', error);
+    }
+  };
+
 export const secureRequest = () => async (dispatch: AppDispatch, getState: () => RootState) => {
   const token = getState().auth.token;
   if (!token || !jwt.verify(token, import.meta.env.VITE_JWT_SECRET as string)) {
