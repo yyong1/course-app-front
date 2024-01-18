@@ -2,6 +2,8 @@ import { Carousel } from '../../components/Carousel';
 import Adds from './AddsSection/Adds.tsx';
 import CourseSection from './CourseSection/CourseSection.tsx';
 import Box from '@mui/material/Box';
+import ReviewSection from './ReviewSection/ReviewSection.tsx';
+import { Footer } from '../../components/Footer';
 
 const coursesData = [
   {
@@ -60,11 +62,13 @@ function Home() {
   return (
     <>
       <Adds />
-      <Box sx={{ flexGrow: 1 }}>
+      <Box sx={{ flexGrow: 1, mb: 2 }}>
         <CourseSection courses={coursesData} />
       </Box>
-      <div>reviews</div>
-      <Carousel />
+      <Box sx={{ flexGrow: 1 }}>
+        <ReviewSection />
+      </Box>
+      <Footer />
     </>
   );
 }
