@@ -22,8 +22,10 @@ const schema = yup
 
 function AuthModalDialog() {
   const dispatch = useAppDispatch();
-  const { success, error } = useAppSelector((state) => state.auth);
+  // const { success, error } = useAppSelector((state) => state.auth);
   const isOpen = useAppSelector((state) => state.modal.isOpen);
+  const success = useAppSelector((state) => state.auth.success);
+  const error = useAppSelector((state) => state.auth.error);
 
   const {
     register,
@@ -39,9 +41,9 @@ function AuthModalDialog() {
 
   useEffect(() => {
     if (success) {
-      ToastService.success('Регистрация прошла успешно!');
+      ToastService.success('Sign up successful! Login in your account.');
     } else if (error) {
-      ToastService.error('Ошибка регистрации: ' + error);
+      ToastService.error('Error: ' + error);
     }
   }, [success, error]);
 
@@ -49,7 +51,7 @@ function AuthModalDialog() {
     console.log('should go to redux and call axios thunk', data);
     dispatch(registerUserThunk(data));
     console.log('success', success, 'error', error);
-    // ToastService.success("Sign up successful!");
+    ToastService.success('Sign up successful!');
   };
 
   return (

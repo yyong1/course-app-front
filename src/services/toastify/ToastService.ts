@@ -24,8 +24,6 @@ const ToastService = {
       progress: undefined,
     });
   },
-
-  // Add more types of toasts if needed
 };
 
 export default ToastService;

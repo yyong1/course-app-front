@@ -6,7 +6,7 @@ const userToken = localStorage.getItem('userToken') || null;
 interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
-  userInfo: any | null; // Replace 'any' with your User type
+  userInfo: any | null; // Replace 'any' with User type
   userToken: string | null;
   error: string | null;
   success: boolean;
@@ -25,7 +25,6 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    // Removed userLoaded as per your request
     logout: (state) => {
       state.isAuthenticated = false;
       state.userInfo = null;
