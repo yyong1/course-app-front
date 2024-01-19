@@ -1,45 +1,49 @@
-import jwt from 'jsonwebtoken';
-import axios from 'axios';
-import { userLoaded, logout } from './authSlice';
-import { AppDispatch, RootState } from '../../../store';
+// import jwt from 'jsonwebtoken';
+// import { logout } from './authSlice';
+// import { AppDispatch, RootState } from '../../../store';
+import { createAsyncThunk } from '@reduxjs/toolkit';
+import { LoginFormData, RegisterFormData } from '../../../../utils/types';
+import { appAxios } from '../../../../services';
 
-export const login = (username: string, password: string) => async (dispatch: AppDispatch) => {
+export const loginUser = createAsyncThunk('auth/login', async (data: LoginFormData, { rejectWithValue }) => {
   try {
-    const { data } = await axios.post('/api/login', { username, password });
-    dispatch(userLoaded(data.user));
-    localStorage.setItem('token', data.token);
-  } catch (error) {
-    console.error('Login failed:', error);
-  }
-};
+    const response = await appAxios.post('/auth/login', data);
+    const { user, token } = response.data;
 
-export const register =
-  (username: string, password: string, email: string, role: string) => async (dispatch: AppDispatch) => {
-    try {
-      const { data } = await axios.post('/api/register', { username, password, email, role });
-      dispatch(userLoaded(data.user));
-      localStorage.setItem('token', data.token);
-    } catch (error) {
-      console.error('Login failed:', error);
+    // dispatch(userLoaded(user));
+    localStorage.setItem('token', token);
+    console.log('auth action Login success:', user);
+
+    return user;
+  } catch (error: any) {
+    if (error.response && error.response.data.message) {
+      console.log('auth action Login failed:', error.response.data.message);
+      return rejectWithValue(error.response.data.message);
+    } else {
+      return rejectWithValue(error.message);
     }
-  };
-
-export const secureRequest = () => async (dispatch: AppDispatch, getState: () => RootState) => {
-  const token = getState().auth.token;
-  if (!token || !jwt.verify(token, import.meta.env.VITE_JWT_SECRET as string)) {
-    dispatch(logout());
-  } else {
-    console.error('Invalid token - auth action');
   }
-};
+});
 
-// export const refreshToken = () => async (dispatch: AppDispatch, getState: () => RootState) => {
-//   try {
-//     const { data } = await axios.get('/api/refresh_token');
-//     localStorage.setItem('token', data.token);
-//     dispatch(userLoaded(data.user));
-//   } catch (error) {
+export const registerUser = createAsyncThunk('auth/register', async (data: RegisterFormData, { rejectWithValue }) => {
+  try {
+    await appAxios.post('/auth/register', data);
+    console.log('auth action Register success', data);
+  } catch (error: any) {
+    if (error.response && error.response.data.message) {
+      console.log('auth action Register failed:', error.response.data.message);
+      return rejectWithValue(error.response.data.message);
+    } else {
+      return rejectWithValue(error.message);
+    }
+  }
+});
+
+// export const secureRequest = () => async (dispatch: AppDispatch, getState: () => RootState) => {
+//   const token = getState().auth.userToken;
+//   if (!token || !jwt.verify(token, import.meta.env.VITE_JWT_SECRET as string)) {
 //     dispatch(logout());
-//     console.error('Refresh token failed:', error);
+//   } else {
+//     console.error('Invalid token - auth action');
 //   }
 // };

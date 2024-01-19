@@ -1,20 +1,16 @@
 import { useEffect } from 'react';
+import { Checkbox, Stack, DialogContent, DialogTitle, ModalDialog, Modal, FormControl, Button } from '@mui/joy';
+import { FormControlLabel, Grid, TextField } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { closeAuthModal } from '../../redux/reducers/features/modalFeature/modalSlice';
-import { Link } from 'react-router-dom';
-import { FormControlLabel, Grid, TextField } from '@mui/material';
-import { Checkbox, Stack, DialogContent, DialogTitle, ModalDialog, Modal, FormControl, Button } from '@mui/joy';
+import { registerUser as registerUserThunk } from '../../redux/reducers/features/authFeature/authAction';
 
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-
-export type RegisterFormData = {
-  email: string;
-  password: string;
-  username: string;
-  // role: 'GUEST' | 'STUDENT' | 'EDUCATOR';
-};
+import { RegisterFormData } from '../../utils/types';
+import ToastService from '../../services/toastify/ToastService.ts';
 
 const schema = yup
   .object({
@@ -26,6 +22,7 @@ const schema = yup
 
 function AuthModalDialog() {
   const dispatch = useAppDispatch();
+  const { success, error } = useAppSelector((state) => state.auth);
   const isOpen = useAppSelector((state) => state.modal.isOpen);
 
   const {
@@ -40,9 +37,19 @@ function AuthModalDialog() {
     console.log('AuthModalDialog is rendered', isOpen);
   }, [isOpen]);
 
+  useEffect(() => {
+    if (success) {
+      ToastService.success('Регистрация прошла успешно!');
+    } else if (error) {
+      ToastService.error('Ошибка регистрации: ' + error);
+    }
+  }, [success, error]);
+
   const onSubmit = (data: RegisterFormData) => {
     console.log('should go to redux and call axios thunk', data);
-    // dispatch(register(data));
+    dispatch(registerUserThunk(data));
+    console.log('success', success, 'error', error);
+    // ToastService.success("Sign up successful!");
   };
 
   return (
