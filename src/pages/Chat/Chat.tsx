@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Box, TextField, Button, Grid, List } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import Message from '../../utils/types/types.ts';
-import { UserCell, MessageComponent } from '../../components/ChatComponents';
+import { UserCell, MessageComponent, ControlPanel } from '../../components/ChatComponents';
 import { WebSocketService } from '../../services';
 // eslint-disable-next-line import/no-unresolved
-import { IMessage } from '@stomp/stompjs'; // Ensure you have this import
+import { IMessage } from '@stomp/stompjs';
+import { Autocomplete } from '@mui/joy'; // Ensure you have this import
 // import useMessage from '../../hooks/useMessage.ts';
 
 const initialMessages = [
@@ -21,30 +22,27 @@ function Chat() {
   // Assuming useMessage is a custom hook for fetching messages
   // const { data: messageData /*, error, isLoading, isError, refetch */ } = useMessage();
 
-  // This function will handle incoming WebSocket messages
   const handleIncomingMessage = (incomingMsg: IMessage) => {
-    // Assuming you need to convert IMessage to your Message format
     const msg: Message = {
-      id: messages.length + 1, // or some other logic to assign a unique ID
-      text: incomingMsg.body, // Assuming that the text of the message is in the body property
-      sender: 'user', // You'll need to determine how to set the sender
+      id: messages.length + 1,
+      text: incomingMsg.body,
+      sender: 'user',
     };
 
-    // Now you can use the converted message in your state update
     setMessages((prevMessages) => [...prevMessages, msg]);
   };
 
   useEffect(() => {
-    WebSocketService.connect(handleIncomingMessage); // Используйте экземпляр, а не класс
+    WebSocketService.connect(handleIncomingMessage);
 
     return () => {
-      WebSocketService.disconnect(); // Используйте экземпляр, а не класс
+      WebSocketService.disconnect();
     };
   }, []);
 
   const handleSend = () => {
     if (input.trim() !== '') {
-      WebSocketService.sendMessage('/message', input); // Используйте экземпляр, а не класс
+      WebSocketService.sendMessage('/message', input);
       setInput('');
     }
   };
@@ -65,9 +63,42 @@ function Chat() {
   //     });
   // }, []);
 
+  // const users = [
+  //   { id: '1', name: 'Alice' },
+  //   { id: '2', name: 'Bob' },
+  //   { id: '3', name: 'Charlie' },
+  //   // ... more users
+  // ];
+  // const [selectedUser, setSelectedUser] = useState(null);
+  // const [searchQuery, setSearchQuery] = useState('');
+  //
+  // // Function to create a new chat with the selected user
+  // const handleCreateChat = (user) => {
+  //   // Send a request to create a new chat
+  //   // Update the chat list
+  // };
+  // const handleSearch = (event) => {
+  //   setSearchQuery(event.target.value);
+  //   // Implement search functionality
+  // };
+  const [openControlPanel, setOpenControlPanel] = useState(false);
+
   return (
     <Grid container spacing={2}>
       <Grid item xs={3}>
+        <Box sx={{ w: 10 }}>
+          <ControlPanel open={openControlPanel} setOpen={setOpenControlPanel} />
+        </Box>
+        {/*</Grid>*/}
+        {/*  <Autocomplete*/}
+        {/*    options={users}*/}
+        {/*    getOptionLabel={(option) => option.name}*/}
+        {/*    renderInput={(params) => <TextField {...params} label="Start a chat with" />}*/}
+        {/*    onChange={(event, newValue) => {*/}
+        {/*      handleCreateChat(newValue);*/}
+        {/*    }}*/}
+        {/*  />*/}
+        {/*  <TextField fullWidth label="Search for chats" value={searchQuery} onChange={handleSearch} />*/}
         <List>
           <UserCell
             name="Remy Sharp"
