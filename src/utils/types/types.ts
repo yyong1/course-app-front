@@ -14,7 +14,7 @@ export type RegisterFormData = {
   email: string;
   password: string;
   username: string;
-  // role: 'GUEST' | 'STUDENT' | 'EDUCATOR';
+  role: 'GUEST' | 'STUDENT' | 'EDUCATOR';
 };
 
 export type LoginFormData = {

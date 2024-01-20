@@ -8,11 +8,8 @@ import { appAxios } from '../../../../services';
 export const loginUser = createAsyncThunk('auth/login', async (data: LoginFormData, { rejectWithValue }) => {
   try {
     const response = await appAxios.post('/auth/login', data);
-    const { user, token } = response.data;
-
-    // dispatch(userLoaded(user));
-    localStorage.setItem('token', token);
-    console.log('auth action Login success:', user);
+    const { jwt, ...user } = response.data;
+    localStorage.setItem('token', jwt);
 
     return user;
   } catch (error: any) {

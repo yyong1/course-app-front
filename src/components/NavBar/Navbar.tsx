@@ -18,10 +18,15 @@ import { openAuthModal } from '../../redux/reducers/features/modalFeature/modalS
 import { useAppDispatch, useAppSelector } from '../../redux/hooks.ts';
 import Logo from '../../assets/learnForge.svg';
 import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
 
-const pages = [
+const pagesUnAuth = [
   { name: 'Our courses', path: '/courses' },
   { name: 'About', path: '/about' },
+];
+const pagesAuth = [
+  { name: 'Chat', path: '/chat' },
+  { name: 'My courses', path: '/mycourses' },
 ];
 const settings = ['Profile', 'Account', 'Logout'];
 
@@ -31,6 +36,10 @@ function ResponsiveAppBar() {
 
   const dispatch = useAppDispatch();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+
+  useEffect(() => {
+    console.log(`Authentication status changed: ${isAuthenticated}`);
+  }, [isAuthenticated]);
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
@@ -113,13 +122,21 @@ function ResponsiveAppBar() {
                 display: { xs: 'block', md: 'none' },
               }}
             >
-              {pages.map((page) => (
-                <Button key={page.name} sx={{ my: 2, color: 'white', display: 'block' }}>
-                  <Link to={page.path} style={{ textDecoration: 'none', color: 'white' }}>
-                    {page.name}
-                  </Link>
-                </Button>
-              ))}
+              {isAuthenticated
+                ? pagesAuth.map((page) => (
+                    <Button key={page.name} sx={{ my: 2, color: 'white', display: 'block' }}>
+                      <Link to={page.path} style={{ textDecoration: 'none', color: 'white' }}>
+                        {page.name}
+                      </Link>
+                    </Button>
+                  ))
+                : pagesUnAuth.map((page) => (
+                    <Button key={page.name} sx={{ my: 2, color: 'white', display: 'block' }}>
+                      <Link to={page.path} style={{ textDecoration: 'none', color: 'white' }}>
+                        {page.name}
+                      </Link>
+                    </Button>
+                  ))}
             </Menu>
           </Box>
 
@@ -143,13 +160,21 @@ function ResponsiveAppBar() {
             Learn Forge
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {pages.map((page) => (
-              <Button key={page.name} sx={{ my: 2, color: 'white', display: 'block' }}>
-                <Link to={page.path} style={{ textDecoration: 'none', color: 'white' }}>
-                  {page.name}
-                </Link>
-              </Button>
-            ))}
+            {isAuthenticated
+              ? pagesAuth.map((page) => (
+                  <Button key={page.name} sx={{ my: 2, color: 'white', display: 'block' }}>
+                    <Link to={page.path} style={{ textDecoration: 'none', color: 'white' }}>
+                      {page.name}
+                    </Link>
+                  </Button>
+                ))
+              : pagesUnAuth.map((page) => (
+                  <Button key={page.name} sx={{ my: 2, color: 'white', display: 'block' }}>
+                    <Link to={page.path} style={{ textDecoration: 'none', color: 'white' }}>
+                      {page.name}
+                    </Link>
+                  </Button>
+                ))}
           </Box>
           {!isAuthenticated && (
             <Box sx={{ flexGrow: 0 }}>

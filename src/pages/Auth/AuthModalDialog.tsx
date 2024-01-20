@@ -8,12 +8,16 @@ import {
   loginUser as loginUserThunk,
 } from '../../redux/reducers/features/authFeature/authAction';
 
-// import { Link } from 'react-router-dom';
+import {
+  // Link,
+  useNavigate,
+} from 'react-router-dom';
 import { useForm, FieldErrors } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { LoginFormData, RegisterFormData } from '../../utils/types';
 import ToastService from '../../services/toastify/ToastService.ts';
+import { resetSuccessAuth } from '../../redux/reducers/features/authFeature/authSlice.ts';
 
 // custom error fix for FieldErrors
 type FormErrors = FieldErrors<{
@@ -37,10 +41,9 @@ const signInSchema = yup
   })
   .required();
 
-// Используйте signInSchema в useForm, если isSignUp === false
-
 function AuthModalDialog() {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { success, error } = useAppSelector((state) => state.auth);
   const { isOpen, authMode } = useAppSelector((state) => state.modal);
   const [isSignUp, setIsSignUp] = useState(authMode === 'signUp');
@@ -67,9 +70,19 @@ function AuthModalDialog() {
     }
   }, [success, error, dispatch]);
 
+  useEffect(() => {
+    if (success && authMode === 'signIn') {
+      ToastService.success('Login successful!');
+      dispatch(closeAuthModal());
+      navigate('/chat');
+      dispatch(resetSuccessAuth());
+    }
+  }, [success, authMode, dispatch, navigate]);
+
   const onSubmit = (data: RegisterFormData | LoginFormData) => {
     if (authMode === 'signUp') {
-      dispatch(registerUserThunk(data as RegisterFormData));
+      const registerData = { ...data, role: 'STUDENT' } as RegisterFormData;
+      dispatch(registerUserThunk(registerData));
     } else {
       dispatch(loginUserThunk(data as LoginFormData));
     }

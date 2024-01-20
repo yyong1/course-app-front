@@ -1,4 +1,4 @@
-import appAxios from './appAxios.ts';
+import appAxios from './axios/appAxios.ts';
 import { Course } from '../utils/types/types.ts';
 
 const getCourse = async (): Promise<Course[]> => {

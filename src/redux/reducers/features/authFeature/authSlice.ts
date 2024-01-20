@@ -33,6 +33,10 @@ const authSlice = createSlice({
       state.error = null;
       state.success = false;
     },
+    resetSuccessAuth: (state) => {
+      state.success = false; // !
+      state.isAuthenticated = true;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -44,6 +48,7 @@ const authSlice = createSlice({
         state.userInfo = action.payload;
         state.loading = false;
         state.userToken = action.payload.token;
+        state.success = true;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.error = action.payload as string;
@@ -63,6 +68,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, resetSuccessAuth } = authSlice.actions;
 
 export default authSlice.reducer;

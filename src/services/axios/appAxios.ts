@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BASE_URL } from '../utils/constants';
+import { BASE_URL } from '../../utils/constants.ts';
 
 const appAxios = axios.create({
   baseURL: BASE_URL,
