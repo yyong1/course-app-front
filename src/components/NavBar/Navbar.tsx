@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import AdbIcon from '@mui/icons-material/Adb';
 import MenuIcon from '@mui/icons-material/Menu';
-import { openAuthModal, closeAuthModal } from '../../redux/reducers/features/modalFeature/modalSlice.ts';
+import { openAuthModal } from '../../redux/reducers/features/modalFeature/modalSlice.ts';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks.ts';
 import Logo from '../../assets/learnForge.svg';
 import { Link } from 'react-router-dom';
@@ -156,8 +156,7 @@ function ResponsiveAppBar() {
               <Button
                 color="inherit"
                 onClick={() => {
-                  dispatch(openAuthModal());
-                  console.log('ggg');
+                  dispatch(openAuthModal('signIn'));
                 }}
               >
                 Sign in
@@ -165,8 +164,7 @@ function ResponsiveAppBar() {
               <Button
                 color="inherit"
                 onClick={() => {
-                  dispatch(closeAuthModal());
-                  console.log('ggg');
+                  dispatch(openAuthModal('signUp'));
                 }}
               >
                 Sign up

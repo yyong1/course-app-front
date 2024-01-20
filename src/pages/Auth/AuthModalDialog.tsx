@@ -1,18 +1,28 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Checkbox, Stack, DialogContent, DialogTitle, ModalDialog, Modal, FormControl, Button } from '@mui/joy';
-import { FormControlLabel, Grid, TextField } from '@mui/material';
+import { FormControlLabel, TextField } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { closeAuthModal } from '../../redux/reducers/features/modalFeature/modalSlice';
-import { registerUser as registerUserThunk } from '../../redux/reducers/features/authFeature/authAction';
+import {
+  registerUser as registerUserThunk,
+  loginUser as loginUserThunk,
+} from '../../redux/reducers/features/authFeature/authAction';
 
-import { Link } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+// import { Link } from 'react-router-dom';
+import { useForm, FieldErrors } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { RegisterFormData } from '../../utils/types';
+import { LoginFormData, RegisterFormData } from '../../utils/types';
 import ToastService from '../../services/toastify/ToastService.ts';
 
-const schema = yup
+// custom error fix for FieldErrors
+type FormErrors = FieldErrors<{
+  username?: string;
+  email?: string;
+  password?: string;
+}>;
+
+const signUpSchema = yup
   .object({
     email: yup.string().email('Invalid email format').required('Email is required'),
     password: yup.string().min(8, 'Password must be at least 8 characters').required('Password is required'),
@@ -20,65 +30,78 @@ const schema = yup
   })
   .required();
 
+const signInSchema = yup
+  .object({
+    email: yup.string().email('Invalid email format').required('Email is required'),
+    password: yup.string().required('Password is required'),
+  })
+  .required();
+
+// Используйте signInSchema в useForm, если isSignUp === false
+
 function AuthModalDialog() {
   const dispatch = useAppDispatch();
-  // const { success, error } = useAppSelector((state) => state.auth);
-  const isOpen = useAppSelector((state) => state.modal.isOpen);
-  const success = useAppSelector((state) => state.auth.success);
-  const error = useAppSelector((state) => state.auth.error);
+  const { success, error } = useAppSelector((state) => state.auth);
+  const { isOpen, authMode } = useAppSelector((state) => state.modal);
+  const [isSignUp, setIsSignUp] = useState(authMode === 'signUp');
+
+  useEffect(() => {
+    setIsSignUp(authMode === 'signUp');
+  }, [authMode]);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<RegisterFormData>({
-    resolver: yupResolver(schema),
+  } = useForm<RegisterFormData | LoginFormData>({
+    resolver: yupResolver(isSignUp ? signUpSchema : signInSchema),
   });
-
-  useEffect(() => {
-    console.log('AuthModalDialog is rendered', isOpen);
-  }, [isOpen]);
+  const formErrors = errors as FormErrors;
 
   useEffect(() => {
     if (success) {
       ToastService.success('Sign up successful! Login in your account.');
+      dispatch(closeAuthModal());
     } else if (error) {
       ToastService.error('Error: ' + error);
     }
-  }, [success, error]);
+  }, [success, error, dispatch]);
 
-  const onSubmit = (data: RegisterFormData) => {
-    console.log('should go to redux and call axios thunk', data);
-    dispatch(registerUserThunk(data));
-    console.log('success', success, 'error', error);
-    ToastService.success('Sign up successful!');
+  const onSubmit = (data: RegisterFormData | LoginFormData) => {
+    if (authMode === 'signUp') {
+      dispatch(registerUserThunk(data as RegisterFormData));
+    } else {
+      dispatch(loginUserThunk(data as LoginFormData));
+    }
   };
 
   return (
     <Modal open={isOpen} onClose={() => dispatch(closeAuthModal())}>
       <ModalDialog>
-        <DialogTitle>Create new account</DialogTitle>
-        <DialogContent>Fill in your personal information.</DialogContent>
+        <DialogTitle>{isSignUp ? 'Create new account' : 'Sign in to your account'}</DialogTitle>
+        <DialogContent>{isSignUp ? 'Fill in your personal information.' : 'Enter your credentials.'}</DialogContent>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={2}>
-            <FormControl error={Boolean(errors.username)}>
-              <TextField
-                margin="normal"
-                fullWidth
-                label="Username"
-                {...register('username')}
-                error={Boolean(errors.username)}
-                helperText={errors.username?.message}
-              />
-            </FormControl>
-            <FormControl error={Boolean(errors.email)}>
+            {authMode === 'signUp' && (
+              <FormControl error={Boolean(errors.username)}>
+                <TextField
+                  margin="normal"
+                  fullWidth
+                  label="Username"
+                  {...register('username')}
+                  error={Boolean(errors.username)}
+                  helperText={errors.username?.message}
+                />
+              </FormControl>
+            )}
+            <FormControl error={Boolean(formErrors.email)}>
               <TextField
                 margin="normal"
                 fullWidth
                 label="Email"
                 {...register('email')}
-                error={Boolean(errors.email)}
-                helperText={errors.email?.message}
+                error={Boolean(formErrors.email)}
+                helperText={formErrors.email?.message}
               />
             </FormControl>
             <FormControl error={Boolean(errors.password)}>
@@ -93,20 +116,24 @@ function AuthModalDialog() {
               />
             </FormControl>
             <FormControlLabel control={<Checkbox color="primary" />} label="Remember me" />
-            <Button type="submit">Create account</Button>
-            <Grid container direction="column" alignItems="center">
-              <Grid item xs>
-                <Link to="/forgot-password" style={{ textDecoration: 'none', color: 'inherit' }}>
-                  Forgot password?
-                </Link>
-              </Grid>
-              <Grid item>
-                <Link to="/sign-in" style={{ textDecoration: 'none', color: 'inherit' }}>
-                  {/* eslint-disable-next-line react/no-unescaped-entities */}
-                  Don't have an account? Sign In
-                </Link>
-              </Grid>
-            </Grid>
+            {/*  <Button type="submit">Create account</Button>*/}
+            {/*  <Grid container direction="column" alignItems="center">*/}
+            {/*    <Grid item xs>*/}
+            {/*      <Link to="/forgot-password" style={{ textDecoration: 'none', color: 'inherit' }}>*/}
+            {/*        Forgot password?*/}
+            {/*      </Link>*/}
+            {/*    </Grid>*/}
+            {/*    <Grid item>*/}
+            {/*      <Link to="/sign-in" style={{ textDecoration: 'none', color: 'inherit' }}>*/}
+            {/*        /!* eslint-disable-next-line react/no-unescaped-entities *!/*/}
+            {/*        Don't have an account? Sign In*/}
+            {/*      </Link>*/}
+            {/*    </Grid>*/}
+            {/*  </Grid>*/}
+            <Button type="submit">{authMode === 'signUp' ? 'Create account' : 'Sign in'}</Button>
+            {/*<Button onClick={toggleAuthMode}>*/}
+            {/*  {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}*/}
+            {/*</Button>*/}
           </Stack>
         </form>
       </ModalDialog>
