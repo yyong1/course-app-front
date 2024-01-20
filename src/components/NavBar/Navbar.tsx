@@ -17,8 +17,9 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { openAuthModal } from '../../redux/reducers/features/modalFeature/modalSlice.ts';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks.ts';
 import Logo from '../../assets/learnForge.svg';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import { logout } from '../../redux/reducers/features/authFeature/authSlice.ts';
 
 const pagesUnAuth = [
   { name: 'Our courses', path: '/courses' },
@@ -36,6 +37,13 @@ function ResponsiveAppBar() {
 
   const dispatch = useAppDispatch();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/');
+    handleCloseUserMenu();
+  };
 
   useEffect(() => {
     console.log(`Authentication status changed: ${isAuthenticated}`);
@@ -220,7 +228,7 @@ function ResponsiveAppBar() {
                 onClose={handleCloseUserMenu}
               >
                 {settings.map((setting) => (
-                  <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                  <MenuItem key={setting} onClick={setting === 'Logout' ? handleLogout : handleCloseUserMenu}>
                     <Typography textAlign="center">{setting}</Typography>
                   </MenuItem>
                 ))}
