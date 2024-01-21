@@ -24,6 +24,17 @@ class WebSocketService {
     this.stompClient.activate();
   }
 
+  // connect(callback) {
+  //   this.stompClient.onConnect = (frame) => {
+  //     console.log('Connected: ' + frame);
+  //     // Subscribe to a topic where new chat notifications will be sent
+  //     this.stompClient.subscribe('/user/queue/new-chat', (notification) => {
+  //       callback(JSON.parse(notification.body));
+  //     });
+  //   };
+  //   this.stompClient.activate();
+  // }
+
   disconnect(): void {
     if (this.stompClient.active) {
       this.stompClient.deactivate();

@@ -50,37 +50,21 @@ function Chat() {
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInput(event.target.value);
   };
-  // useEffect(() => {
-  //   MessageService.getMessage()
-  //     .then((res) => {
-  //       console.log(res);
-  //       const text = typeof res === 'string' ? res : JSON.stringify(res);
-  //       const newMessage = { id: messages.length + 1, text: text, sender: '' };
-  //       setMessages([...messages, newMessage]);
-  //     })
-  //     .catch((err) => {
-  //       console.log(err);
-  //     });
-  // }, []);
 
-  // const users = [
-  //   { id: '1', name: 'Alice' },
-  //   { id: '2', name: 'Bob' },
-  //   { id: '3', name: 'Charlie' },
-  //   // ... more users
-  // ];
-  // const [selectedUser, setSelectedUser] = useState(null);
-  // const [searchQuery, setSearchQuery] = useState('');
+  // useEffect(() => {
+  //   WebSocketService.connect(handleNewChatNotification);
   //
-  // // Function to create a new chat with the selected user
-  // const handleCreateChat = (user) => {
-  //   // Send a request to create a new chat
-  //   // Update the chat list
+  //   return () => {
+  //     WebSocketService.disconnect();
+  //   };
+  // }, []);
+  //
+  // const handleNewChatNotification = (notification) => {
+  //   // Update your chat list state
+  //   // notification might contain chat details
+  //   addChatToList(notification.chat);
   // };
-  // const handleSearch = (event) => {
-  //   setSearchQuery(event.target.value);
-  //   // Implement search functionality
-  // };
+
   const [openControlPanel, setOpenControlPanel] = useState(false);
 
   return (

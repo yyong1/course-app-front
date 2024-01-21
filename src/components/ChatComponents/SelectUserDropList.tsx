@@ -9,6 +9,8 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import React, { useState } from 'react';
 import { useUsers } from '../../hooks';
 import { User } from '../../utils/types/types.ts';
+import { useAppSelector } from '../../redux/hooks.ts';
+import { string } from 'yup';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -34,16 +36,23 @@ interface SelectUserDropListProps {
 }
 
 function SelectUserDropList({ setSelectedUsers }: SelectUserDropListProps) {
+  const userInfo = useAppSelector((state) => state.auth.userInfo);
+  console.log('userInfo:', userInfo);
   const { data: queryUsers, isLoading, isError } = useUsers(); // Use the hook to fetch users
   const theme = useTheme();
-  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([userInfo.id]);
 
   const handleChange = (event: SelectChangeEvent<string[]>) => {
     const {
       target: { value },
     } = event;
-    setSelectedUserIds(typeof value === 'string' ? value.split(',') : value);
-    setSelectedUsers(queryUsers?.filter((user) => (value as string[]).includes(user.id)) ?? []);
+    // Ensure the clientId is always included and not removable
+    let newSelectedUserIds = typeof value === 'string' ? value.split(',') : value;
+    if (!newSelectedUserIds.includes(userInfo.id)) {
+      newSelectedUserIds = [...newSelectedUserIds, userInfo.id];
+    }
+    setSelectedUserIds(newSelectedUserIds);
+    setSelectedUsers(queryUsers?.filter((user) => newSelectedUserIds.includes(user.id)) ?? []);
   };
 
   if (isLoading) return <div>Loading...</div>;

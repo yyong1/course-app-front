@@ -14,6 +14,7 @@ import SelectUserDropList from './SelectUserDropList.tsx';
 import { Grid } from '@mui/material';
 import { useState } from 'react';
 import { User } from '../../utils/types/types.ts';
+import { ChatService } from '../../services';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -30,22 +31,32 @@ interface ControlPanelProps {
 }
 
 function ControlPanel({ setOpen, open }: ControlPanelProps) {
+  const [chatName, setChatName] = useState<string>('');
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+
   const handleClickOpen = () => {
     setOpen(true);
   };
+
   const handleClose = () => {
     setOpen(false);
   };
-  const [chatName, setChatName] = useState<string>(''); // State for the chat name
-  const [selectedUsers, setSelectedUsers] = useState<User[]>([]); // State for selected user IDs
 
-  const handleCreateChat = () => {
-    const newChatData = {
-      chatName: chatName,
-      userIds: selectedUsers,
-    };
-    console.log('newChatData', newChatData);
+  const handleCreateChat = async () => {
+    try {
+      const newChatData = {
+        chatName: chatName,
+        userIds: selectedUsers.map((user) => user.id),
+      };
+      console.log('New chat data:', newChatData);
+      const newChat = await ChatService.setNewChat(newChatData);
+      console.log('New chat created:', newChat);
+      // Here you notify users, e.g., via a WebSocket message
+    } catch (error) {
+      console.error('Error while creating chat:', error);
+    }
   };
+
   const handleChatNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setChatName(event.target.value);
   };
