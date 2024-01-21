@@ -1,5 +1,5 @@
 import appAxios from '../axios/appAxios';
-import { User } from '../../utils/types/types';
+import { Chat, User } from '../../utils/types/types';
 
 const setNewChat = async (chatData: { chatName: string; userIds: string[] }): Promise<User[]> => {
   try {
@@ -12,9 +12,9 @@ const setNewChat = async (chatData: { chatName: string; userIds: string[] }): Pr
   }
 };
 
-const getChatList = async (): Promise<User[]> => {
+const getChatList = async (userId: string): Promise<Chat[]> => {
   try {
-    const response = await appAxios.get(`/chats`);
+    const response = await appAxios.get(`/chats/user/${userId}`);
     console.log(response.data);
     return response.data;
   } catch (error) {
@@ -23,4 +23,4 @@ const getChatList = async (): Promise<User[]> => {
   }
 };
 
-export default { setNewChat };
+export default { setNewChat, getChatList };

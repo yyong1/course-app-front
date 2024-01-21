@@ -5,35 +5,68 @@ import Message from '../../utils/types/types.ts';
 import { UserCell, MessageComponent, ControlPanel } from '../../components/ChatComponents';
 import { WebSocketService } from '../../services';
 // eslint-disable-next-line import/no-unresolved
-import { IMessage } from '@stomp/stompjs';
-import { Autocomplete } from '@mui/joy'; // Ensure you have this import
-// import useMessage from '../../hooks/useMessage.ts';
+// import { IMessage } from '@stomp/stompjs';
+import { useChatList } from '../../hooks';
+import { useAppSelector } from '../../redux/hooks.ts'; // Ensure you have this import
 
 const initialMessages = [
-  { id: 1, text: 'Hi there!', sender: 'bot' },
-  { id: 2, text: 'Hello!', sender: 'user' },
-  { id: 3, text: 'How can I assist you today?', sender: 'bot' },
+  {
+    id: '1',
+    senderId: 'afadfac-adfad',
+    chatId: '2',
+    content: 'hello',
+    timestamp: '2021-10-10T10:10:10.000Z',
+  },
 ];
 
 function Chat() {
   const [input, setInput] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const userInfo = useAppSelector((state) => state.auth.userInfo);
+  const {
+    data: chatData,
+    // error, isLoading, isError, refetch
+  } = useChatList(userInfo.id);
+  console.log('useChatList chatData data: ', chatData);
 
-  // Assuming useMessage is a custom hook for fetching messages
-  // const { data: messageData /*, error, isLoading, isError, refetch */ } = useMessage();
+  const [selectedChat, setSelectedChat] = useState(null);
+  const [selectedChatMessages, setSelectedChatMessages] = useState<Message[]>([]); // New state for selected chat messages
 
-  const handleIncomingMessage = (incomingMsg: IMessage) => {
-    const msg: Message = {
-      id: messages.length + 1,
-      text: incomingMsg.body,
-      sender: 'user',
-    };
+  const handleChatSelection = (chatId) => {
+    setSelectedChat(chatId);
+    console.log(selectedChat);
+    const selectedChatData = chatData.find((chat) => chat.id === chatId);
+    if (selectedChatData) {
+      setSelectedChatMessages(selectedChatData.messages || []);
+    } else {
+      setSelectedChatMessages([]);
+    }
+  };
+  const handleIncomingMessage = (incomingMsg: Message) => {
+    if (selectedChat) {
+      const msg: Message = {
+        id: '',
+        senderId: userInfo.id,
+        chatId: selectedChat,
+        content: input,
+        timestamp: new Date().toISOString(),
+      };
+      setMessages((prevMessages) => [...prevMessages, msg]);
+    }
+  };
 
-    setMessages((prevMessages) => [...prevMessages, msg]);
+  const handleNewChatNotification = (chatNotification) => {
+    // Предполагая, что chatNotification содержит информацию о новом чате
+    const newChat = JSON.parse(chatNotification.body);
+    // Обновление списка чатов
+    // ...
   };
 
   useEffect(() => {
-    WebSocketService.connect(handleIncomingMessage);
+    WebSocketService.connect(
+      () => WebSocketService.subscribe('/topic/newChat', handleNewChatNotification),
+      (error) => console.error(error),
+    );
 
     return () => {
       WebSocketService.disconnect();
@@ -84,12 +117,17 @@ function Chat() {
         {/*  />*/}
         {/*  <TextField fullWidth label="Search for chats" value={searchQuery} onChange={handleSearch} />*/}
         <List>
-          <UserCell
-            name="Remy Sharp"
-            avatarSrc="/static/images/avatar/1.jpg"
-            primaryText="Brunch this weekend?"
-            secondaryText="I'll be in your neighborhood doing errands this…"
-          />
+          {chatData?.map((chat) => (
+            <UserCell
+              key={chat.id}
+              name={chat.messages && chat.messages.length > 0 ? chat.messages[0].text : 'No messages yet'}
+              avatarSrc="/static/images/avatar/1.jpg"
+              primaryText={chat.chatName}
+              secondaryText={chat.messages && chat.messages.length > 0 ? chat.messages[0].text : 'No messages yet'}
+              onClick={() => handleChatSelection(chat.id)}
+              selected={selectedChat === chat.id} // Pass selected state
+            />
+          ))}
         </List>
       </Grid>
       <Grid item xs={9}>
@@ -102,12 +140,9 @@ function Chat() {
           }}
         >
           <Box sx={{ flexGrow: 1, overflow: 'auto', p: 2 }}>
-            {
-              // || useMsgQuery
-              messages.map((message) => (
-                <MessageComponent key={message.id} message={message} />
-              ))
-            }
+            {messages.map((message) => (
+              <MessageComponent key={message.id} message={message} />
+            ))}
           </Box>
           <Box sx={{ p: 2, backgroundColor: 'background.default' }}>
             <Grid container spacing={2}>

@@ -6,11 +6,20 @@ interface UserCellProps {
   avatarSrc: string;
   primaryText: string;
   secondaryText: string;
+  onClick: () => void;
+  selected: boolean;
 }
 
-const UserCell: React.FC<UserCellProps> = ({ name, avatarSrc, primaryText, secondaryText }) => {
+const UserCell: React.FC<UserCellProps & { onClick: () => void }> = ({
+  name,
+  avatarSrc,
+  primaryText,
+  secondaryText,
+  onClick,
+  selected,
+}) => {
   return (
-    <ListItem alignItems="flex-start">
+    <ListItem alignItems="flex-start" onClick={onClick} sx={{ backgroundColor: selected ? 'lightgrey' : 'inherit' }}>
       <ListItemAvatar>
         <Avatar alt={name} src={avatarSrc} />
       </ListItemAvatar>

@@ -14,7 +14,7 @@ import SelectUserDropList from './SelectUserDropList.tsx';
 import { Grid } from '@mui/material';
 import { useState } from 'react';
 import { User } from '../../utils/types/types.ts';
-import { ChatService } from '../../services';
+import { ChatService, WebSocketService } from '../../services';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -51,7 +51,13 @@ function ControlPanel({ setOpen, open }: ControlPanelProps) {
       console.log('New chat data:', newChatData);
       const newChat = await ChatService.setNewChat(newChatData);
       console.log('New chat created:', newChat);
-      // Here you notify users, e.g., via a WebSocket message
+
+      // Убедитесь, что соединение WebSocket активно
+      if (WebSocketService.isConnected()) {
+        WebSocketService.sendMessage('/topic/newChat', JSON.stringify(newChat));
+      } else {
+        console.error('WebSocket connection is not active.');
+      }
     } catch (error) {
       console.error('Error while creating chat:', error);
     }

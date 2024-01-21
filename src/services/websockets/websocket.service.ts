@@ -1,55 +1,74 @@
 import SockJS from 'sockjs-client';
-// eslint-disable-next-line import/no-unresolved
 import { Client, IMessage, Stomp } from '@stomp/stompjs';
 
 interface MessageCallback {
-  (_message: IMessage): void;
+  (message: IMessage): void;
 }
 
 class WebSocketService {
   private stompClient: Client;
 
-  constructor(url: string) {
-    const socket = new SockJS(url);
-    this.stompClient = Stomp.over(socket);
+  constructor(private url: string) {}
+
+  connect(onConnect: () => void = () => {}, onError: () => void = () => {}): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      if (this.stompClient && this.stompClient.connected) {
+        resolve();
+      } else {
+        const socket = new SockJS(this.url);
+
+        this.stompClient = Stomp.over(socket);
+
+        this.stompClient.debug = () => {};
+
+        this.stompClient.connect(
+          {},
+          () => {
+            console.log('WebSocket connected!');
+            onConnect(); // Call onConnect callback
+            resolve();
+          },
+          (error) => {
+            console.error('WebSocket connection failed:', error);
+            onError(); // Call onError callback
+            reject(error);
+          },
+        );
+      }
+    });
   }
 
-  connect(callback: MessageCallback): void {
-    this.stompClient.onConnect = (frame) => {
-      console.log('Connected: ' + frame);
-      this.stompClient.subscribe('/messages', (_message) => {
-        callback(JSON.parse(_message.body));
+  subscribe(topic: string, onMessage: MessageCallback) {
+    if (this.stompClient && this.stompClient.connected) {
+      this.stompClient.subscribe(topic, (message) => {
+        onMessage(message);
       });
-    };
-    this.stompClient.activate();
-  }
-
-  // connect(callback) {
-  //   this.stompClient.onConnect = (frame) => {
-  //     console.log('Connected: ' + frame);
-  //     // Subscribe to a topic where new chat notifications will be sent
-  //     this.stompClient.subscribe('/user/queue/new-chat', (notification) => {
-  //       callback(JSON.parse(notification.body));
-  //     });
-  //   };
-  //   this.stompClient.activate();
-  // }
-
-  disconnect(): void {
-    if (this.stompClient.active) {
-      this.stompClient.deactivate();
-      console.log('Websocket Disconnected');
+    } else {
+      console.error('Cannot subscribe: WebSocket connection is not active');
     }
   }
 
-  subscribe(chat: string, callback: MessageCallback): void {
-    if (this.stompClient.active) {
-      this.stompClient.subscribe(chat, callback);
+  sendMessage(destination: string, body: string) {
+    if (this.stompClient && this.stompClient.connected) {
+      this.stompClient.send(destination, {}, body);
+    } else {
+      console.error('Cannot send message: WebSocket connection is not active');
     }
   }
 
-  sendMessage(chat: string, message: string): void {
-    this.stompClient.publish({ destination: chat, body: message });
+  isConnected() {
+    return this.stompClient && this.stompClient.connected;
+  }
+
+  disconnect(onDisconnect: () => void) {
+    if (this.stompClient && this.stompClient.connected) {
+      this.stompClient.disconnect(() => {
+        console.log('Disconnected');
+        onDisconnect();
+      });
+    } else {
+      console.error('Cannot disconnect: WebSocket connection is not active');
+    }
   }
 }
 

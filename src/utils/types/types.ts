@@ -1,13 +1,22 @@
 export default interface Message {
-  id: number;
-  text: string;
-  sender: string;
+  id: string;
+  senderId: string;
+  chatId: string;
+  content: string;
+  timestamp: string;
 }
 
 export interface Course {
   id: number;
   name: string;
   description: string;
+}
+
+export interface Chat {
+  id: number;
+  name: string;
+  users: User[];
+  messages: Message[];
 }
 
 export interface User {

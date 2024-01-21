@@ -10,7 +10,6 @@ import React, { useState } from 'react';
 import { useUsers } from '../../hooks';
 import { User } from '../../utils/types/types.ts';
 import { useAppSelector } from '../../redux/hooks.ts';
-import { string } from 'yup';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
