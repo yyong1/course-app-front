@@ -13,6 +13,7 @@ import TextField from '@mui/material/TextField';
 import SelectUserDropList from './SelectUserDropList.tsx';
 import { Grid } from '@mui/material';
 import { useState } from 'react';
+import { User } from '../../utils/types/types.ts';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -25,7 +26,7 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 
 interface ControlPanelProps {
   open: boolean;
-  setOpen: (open: boolean) => void;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 function ControlPanel({ setOpen, open }: ControlPanelProps) {
@@ -36,7 +37,7 @@ function ControlPanel({ setOpen, open }: ControlPanelProps) {
     setOpen(false);
   };
   const [chatName, setChatName] = useState<string>(''); // State for the chat name
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]); // State for selected user IDs
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([]); // State for selected user IDs
 
   const handleCreateChat = () => {
     const newChatData = {
@@ -44,14 +45,6 @@ function ControlPanel({ setOpen, open }: ControlPanelProps) {
       userIds: selectedUsers,
     };
     console.log('newChatData', newChatData);
-    // fetch('/api/chats', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     // Include other headers as needed, e.g., for authorization
-    //   },
-    //   body: JSON.stringify(newChatData),
-    // })
   };
   const handleChatNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setChatName(event.target.value);

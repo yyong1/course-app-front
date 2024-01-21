@@ -10,6 +10,14 @@ export interface Course {
   description: string;
 }
 
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  role: 'GUEST' | 'STUDENT' | 'EDUCATOR';
+  creationDate: string;
+}
+
 export type RegisterFormData = {
   email: string;
   password: string;
