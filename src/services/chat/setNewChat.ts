@@ -4,7 +4,6 @@ import { Chat, User } from '../../utils/types/types';
 const setNewChat = async (chatData: { chatName: string; userIds: string[] }): Promise<User[]> => {
   try {
     const response = await appAxios.post(`/chats`, chatData);
-    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error('Error creating new chat:', error);
@@ -15,7 +14,6 @@ const setNewChat = async (chatData: { chatName: string; userIds: string[] }): Pr
 const getChatList = async (userId: string): Promise<Chat[]> => {
   try {
     const response = await appAxios.get(`/chats/user/${userId}`);
-    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error('Error fetching chats:', error);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ListItem, ListItemAvatar, Avatar, ListItemText, Typography } from '@mui/material';
+import { ListItem, ListItemAvatar, Avatar, ListItemText, Typography, Divider } from '@mui/material';
 
 interface UserCellProps {
   name: string;
@@ -19,22 +19,25 @@ const UserCell: React.FC<UserCellProps & { onClick: () => void }> = ({
   selected,
 }) => {
   return (
-    <ListItem alignItems="flex-start" onClick={onClick} sx={{ backgroundColor: selected ? 'lightgrey' : 'inherit' }}>
-      <ListItemAvatar>
-        <Avatar alt={name} src={avatarSrc} />
-      </ListItemAvatar>
-      <ListItemText
-        primary={primaryText}
-        secondary={
-          <React.Fragment>
-            <Typography sx={{ display: 'inline' }} component="span" variant="body2" color="text.primary">
-              {name}
-            </Typography>
-            {` — ${secondaryText}`}
-          </React.Fragment>
-        }
-      />
-    </ListItem>
+    <>
+      <ListItem alignItems="flex-start" onClick={onClick} sx={{ backgroundColor: selected ? 'lightgrey' : 'inherit' }}>
+        <ListItemAvatar>
+          <Avatar alt={name} src={avatarSrc} />
+        </ListItemAvatar>
+        <ListItemText
+          primary={primaryText}
+          secondary={
+            <React.Fragment>
+              <Typography sx={{ display: 'inline' }} component="span" variant="body2" color="text.primary">
+                {name}
+              </Typography>
+              {` — ${secondaryText}`}
+            </React.Fragment>
+          }
+        />
+      </ListItem>
+      <Divider variant="inset" component="li" />
+    </>
   );
 };
 

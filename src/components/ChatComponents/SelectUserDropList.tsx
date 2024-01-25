@@ -37,7 +37,7 @@ interface SelectUserDropListProps {
 function SelectUserDropList({ setSelectedUsers }: SelectUserDropListProps) {
   const userInfo = useAppSelector((state) => state.auth.userInfo);
   console.log('userInfo:', userInfo);
-  const { data: queryUsers, isLoading, isError } = useUsers(); // Use the hook to fetch users
+  const { data: queryUsers, isLoading, isError } = useUsers();
   const theme = useTheme();
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([userInfo.id]);
 

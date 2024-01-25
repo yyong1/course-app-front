@@ -1,16 +1,19 @@
 import SockJS from 'sockjs-client';
+// eslint-disable-next-line import/no-unresolved
 import { Client, IMessage, Stomp } from '@stomp/stompjs';
 
 interface MessageCallback {
+  // eslint-disable-next-line no-unused-vars
   (message: IMessage): void;
 }
 
 class WebSocketService {
-  private stompClient: Client;
+  private stompClient: Client | undefined;
 
+  // eslint-disable-next-line no-unused-vars
   constructor(private url: string) {}
 
-  connect(onConnect: () => void = () => {}, onError: () => void = () => {}): Promise<void> {
+  connect(onConnect: () => void = (): void => {}, onError: () => void = (): void => {}): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       if (this.stompClient && this.stompClient.connected) {
         resolve();
@@ -24,13 +27,13 @@ class WebSocketService {
         this.stompClient.connect(
           {},
           () => {
+            onConnect();
             console.log('WebSocket connected!');
-            onConnect(); // Call onConnect callback
             resolve();
           },
-          (error) => {
+          (error: never) => {
             console.error('WebSocket connection failed:', error);
-            onError(); // Call onError callback
+            onError();
             reject(error);
           },
         );
@@ -42,6 +45,7 @@ class WebSocketService {
     if (this.stompClient && this.stompClient.connected) {
       this.stompClient.subscribe(topic, (message) => {
         onMessage(message);
+        console.log('Message received:', message);
       });
     } else {
       console.error('Cannot subscribe: WebSocket connection is not active');
@@ -51,6 +55,7 @@ class WebSocketService {
   sendMessage(destination: string, body: string) {
     if (this.stompClient && this.stompClient.connected) {
       this.stompClient.send(destination, {}, body);
+      console.log('Message sent:', body);
     } else {
       console.error('Cannot send message: WebSocket connection is not active');
     }
