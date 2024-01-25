@@ -7,7 +7,7 @@ interface MessageCallback {
   (message: IMessage): void;
 }
 
-class WebSocketService {
+class WebsocketService {
   private stompClient: Client | undefined;
 
   // eslint-disable-next-line no-unused-vars
@@ -77,5 +77,5 @@ class WebSocketService {
   }
 }
 
-const webSocketService = new WebSocketService(import.meta.env.VITE_REACT_APP_BACKEND_WS_URL);
+const webSocketService = new WebsocketService(import.meta.env.VITE_REACT_APP_BACKEND_WS_URL);
 export default webSocketService;
