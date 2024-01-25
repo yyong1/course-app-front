@@ -11,7 +11,7 @@ import Typography from '@mui/material/Typography';
 import AddIcon from '@mui/icons-material/Add';
 import TextField from '@mui/material/TextField';
 import SelectUserDropList from './SelectUserDropList.tsx';
-import { Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import { useState } from 'react';
 import { User } from '../../utils/types/types.ts';
 import { ChatService, WebSocketService } from '../../services';
@@ -70,9 +70,11 @@ function ControlPanel({ setOpen, open }: ControlPanelProps) {
 
   return (
     <React.Fragment>
-      <Button variant="outlined" onClick={handleClickOpen} endIcon={<AddIcon />}>
-        Create new chat
-      </Button>
+      <Box display="flex" justifyContent="center" my={1}>
+        <Button variant="outlined" onClick={handleClickOpen} endIcon={<AddIcon />}>
+          Create new chat
+        </Button>
+      </Box>
       <BootstrapDialog onClose={handleClose} aria-labelledby="customized-dialog-title" open={open}>
         <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
           New chat creation

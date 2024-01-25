@@ -2,22 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Box, TextField, Button, Grid, List } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import Message from '../../utils/types/types.ts';
-import { UserCell, MessageComponent, ControlPanel } from '../../components/ChatComponents';
+import { UserCell, MessageComponent, ControlPanel, NoMessagesYetComponent } from '../../components/ChatComponents';
 import { WebSocketService } from '../../services';
 // eslint-disable-next-line import/no-unresolved
 // import { IMessage } from '@stomp/stompjs';
 import { useChatList } from '../../hooks';
 import { useAppSelector } from '../../redux/hooks.ts';
-
-const initialMessages = [
-  {
-    id: '1',
-    senderId: 'afadfac-adfad',
-    chatId: '2',
-    content: 'hello',
-    timestamp: '2021-10-10T10:10:10.000Z',
-  },
-];
 
 // function FixedSizeList(props: {
 //   overscanCount: number;
@@ -32,7 +22,7 @@ const initialMessages = [
 
 function Chat() {
   const [input, setInput] = useState<string>('');
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [messages, setMessages] = useState<Message[]>();
   const userInfo = useAppSelector((state) => state.auth.userInfo);
   useEffect(() => {
     WebSocketService.connect(
@@ -51,7 +41,7 @@ function Chat() {
   console.log('useChatList chatData data: ', chatData);
 
   const [selectedChat, setSelectedChat] = useState(null);
-  const [selectedChatMessages, setSelectedChatMessages] = useState<Message[]>([]); // New state for selected chat messages
+  const [selectedChatMessages, setSelectedChatMessages] = useState<Message[] | null>([]);
 
   const handleChatSelection = (chatId) => {
     setSelectedChat(chatId);
@@ -94,7 +84,7 @@ function Chat() {
   const [openControlPanel, setOpenControlPanel] = useState(false);
 
   return (
-    <Grid container spacing={2}>
+    <Grid container>
       <Grid item xs={3}>
         <Box sx={{ w: 10 }}>
           <ControlPanel open={openControlPanel} setOpen={setOpenControlPanel} />
@@ -109,7 +99,7 @@ function Chat() {
         {/*    }}*/}
         {/*  />*/}
         {/*  <TextField fullWidth label="Search for chats" value={searchQuery} onChange={handleSearch} />*/}
-        <List>
+        <List sx={{ height: 'auto', overflow: 'auto', p: 0 }}>
           {chatData?.map((chat) => (
             <UserCell
               key={chat.id}
@@ -118,24 +108,19 @@ function Chat() {
               primaryText={chat.chatName}
               secondaryText={chat.messages && chat.messages.length > 0 ? chat.messages[0].text : 'No messages yet'}
               onClick={() => handleChatSelection(chat.id)}
-              selected={selectedChat === chat.id} // Pass selected state
+              selected={selectedChat === chat.id}
             />
           ))}
         </List>
       </Grid>
       <Grid item xs={9}>
-        <Box
-          sx={{
-            height: 'calc(100vh - 120px)',
-            display: 'flex',
-            flexDirection: 'column',
-            bgcolor: 'grey.200',
-          }}
-        >
+        <Box sx={{ display: 'flex', flexDirection: 'column', height: '90vh', bgcolor: 'grey.200' }}>
           <Box sx={{ flexGrow: 1, overflow: 'auto', p: 2 }}>
-            {messages.map((message) => (
-              <MessageComponent key={message.id} message={message} />
-            ))}
+            {messages?.length ? (
+              messages?.map((message) => <MessageComponent key={message.id} message={message} />)
+            ) : (
+              <NoMessagesYetComponent />
+            )}
           </Box>
           <Box sx={{ p: 2, backgroundColor: 'background.default' }}>
             <Grid container spacing={2}>
@@ -143,7 +128,7 @@ function Chat() {
                 <TextField
                   fullWidth
                   size="small"
-                  placeholder="Type a message"
+                  placeholder="Type a message..."
                   variant="outlined"
                   value={input}
                   onChange={handleInputChange}

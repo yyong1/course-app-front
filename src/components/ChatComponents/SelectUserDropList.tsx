@@ -10,6 +10,8 @@ import React, { useState } from 'react';
 import { useUsers } from '../../hooks';
 import { User } from '../../utils/types/types.ts';
 import { useAppSelector } from '../../redux/hooks.ts';
+import { Loader } from '../Loader';
+import { Typography } from '@mui/material';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -45,7 +47,6 @@ function SelectUserDropList({ setSelectedUsers }: SelectUserDropListProps) {
     const {
       target: { value },
     } = event;
-    // Ensure the clientId is always included and not removable
     let newSelectedUserIds = typeof value === 'string' ? value.split(',') : value;
     if (!newSelectedUserIds.includes(userInfo.id)) {
       newSelectedUserIds = [...newSelectedUserIds, userInfo.id];
@@ -54,8 +55,15 @@ function SelectUserDropList({ setSelectedUsers }: SelectUserDropListProps) {
     setSelectedUsers(queryUsers?.filter((user) => newSelectedUserIds.includes(user.id)) ?? []);
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error fetching users</div>;
+  if (isLoading) {
+    return (
+      <div>
+        <Loader />
+      </div>
+    );
+  }
+
+  if (isError) return <Typography>Error fetching users.</Typography>;
 
   return (
     <div>
