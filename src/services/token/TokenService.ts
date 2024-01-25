@@ -29,6 +29,7 @@ class TokenService {
     if (!decodedToken) return false;
 
     const currentTime = Date.now() / 1000;
+    // @ts-ignore
     return decodedToken.exp > currentTime;
   }
 }
