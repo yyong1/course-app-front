@@ -1,6 +1,3 @@
-// import jwt from 'jsonwebtoken';
-// import { logout } from './authSlice';
-// import { AppDispatch, RootState } from '../../../store';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { LoginFormData, RegisterFormData } from '../../../../utils/types';
 import { appAxios } from '../../../../services';
@@ -9,9 +6,8 @@ export const loginUser = createAsyncThunk('auth/login', async (data: LoginFormDa
   try {
     const response = await appAxios.post('/auth/login', data);
     const { jwt, ...user } = response.data;
-    localStorage.setItem('token', jwt);
 
-    return user;
+    return { user, token: jwt };
   } catch (error: any) {
     if (error.response && error.response.data.message) {
       console.log('auth action Login failed:', error.response.data.message);
@@ -35,12 +31,3 @@ export const registerUser = createAsyncThunk('auth/register', async (data: Regis
     }
   }
 });
-
-// export const secureRequest = () => async (dispatch: AppDispatch, getState: () => RootState) => {
-//   const token = getState().auth.userToken;
-//   if (!token || !jwt.verify(token, import.meta.env.VITE_JWT_SECRET as string)) {
-//     dispatch(logout());
-//   } else {
-//     console.error('Invalid token - auth action');
-//   }
-// };

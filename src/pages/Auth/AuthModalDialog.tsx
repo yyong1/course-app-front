@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Checkbox, Stack, DialogContent, DialogTitle, ModalDialog, Modal, FormControl, Button } from '@mui/joy';
 import { FormControlLabel, TextField } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
@@ -19,7 +19,6 @@ import { LoginFormData, RegisterFormData } from '../../utils/types';
 import ToastService from '../../services/toastify/ToastService.ts';
 import { resetSuccessAuth } from '../../redux/reducers/features/authFeature/authSlice.ts';
 
-// custom error fix for FieldErrors
 type FormErrors = FieldErrors<{
   username?: string;
   email?: string;
@@ -46,11 +45,8 @@ function AuthModalDialog() {
   const navigate = useNavigate();
   const { success, error } = useAppSelector((state) => state.auth);
   const { isOpen, authMode } = useAppSelector((state) => state.modal);
-  const [isSignUp, setIsSignUp] = useState(authMode === 'signUp');
 
-  useEffect(() => {
-    setIsSignUp(authMode === 'signUp');
-  }, [authMode]);
+  const isSignUp = authMode === 'signUp';
 
   const {
     register,
@@ -63,21 +59,17 @@ function AuthModalDialog() {
 
   useEffect(() => {
     if (success) {
-      ToastService.success('Sign up successful! Login in your account.');
+      const message = isSignUp ? 'Sign up successful! Login in your account.' : 'Login successful!';
+      ToastService.success(message);
       dispatch(closeAuthModal());
+      if (!isSignUp) {
+        navigate('/chat');
+        dispatch(resetSuccessAuth());
+      }
     } else if (error) {
-      ToastService.error('Error: ' + error);
+      ToastService.error(`Error: ${error}`);
     }
-  }, [success, error, dispatch]);
-
-  useEffect(() => {
-    if (success && authMode === 'signIn') {
-      ToastService.success('Login successful!');
-      dispatch(closeAuthModal());
-      navigate('/chat');
-      dispatch(resetSuccessAuth());
-    }
-  }, [success, authMode, dispatch, navigate]);
+  }, [success, error, isSignUp, dispatch, navigate]);
 
   const onSubmit = (data: RegisterFormData | LoginFormData) => {
     if (authMode === 'signUp') {
@@ -96,14 +88,14 @@ function AuthModalDialog() {
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={2}>
             {authMode === 'signUp' && (
-              <FormControl error={Boolean(errors.username)}>
+              <FormControl error={Boolean(formErrors.username)}>
                 <TextField
                   margin="normal"
                   fullWidth
                   label="Username"
                   {...register('username')}
-                  error={Boolean(errors.username)}
-                  helperText={errors.username?.message}
+                  error={Boolean(formErrors.username)}
+                  helperText={formErrors.username?.message}
                 />
               </FormControl>
             )}

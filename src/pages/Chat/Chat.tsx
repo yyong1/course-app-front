@@ -7,7 +7,7 @@ import { WebSocketService } from '../../services';
 // eslint-disable-next-line import/no-unresolved
 // import { IMessage } from '@stomp/stompjs';
 import { useChatList } from '../../hooks';
-import { useAppSelector } from '../../redux/hooks.ts'; // Ensure you have this import
+import { useAppSelector } from '../../redux/hooks.ts';
 
 const initialMessages = [
   {
@@ -19,14 +19,35 @@ const initialMessages = [
   },
 ];
 
+// function FixedSizeList(props: {
+//   overscanCount: number;
+//   width: number;
+//   itemSize: number;
+//   height: number;
+//   itemCount: number;
+//   children: ReactNode;
+// }) {
+//   return null;
+// }
+
 function Chat() {
   const [input, setInput] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const userInfo = useAppSelector((state) => state.auth.userInfo);
+  useEffect(() => {
+    WebSocketService.connect(
+      () => WebSocketService.subscribe('/topic/newChat', handleNewChatNotification),
+      (error) => console.error(error),
+    );
+
+    return () => {
+      WebSocketService.disconnect();
+    };
+  }, []);
   const {
     data: chatData,
     // error, isLoading, isError, refetch
-  } = useChatList(userInfo.id);
+  } = useChatList(userInfo?.id);
   console.log('useChatList chatData data: ', chatData);
 
   const [selectedChat, setSelectedChat] = useState(null);
@@ -42,36 +63,22 @@ function Chat() {
       setSelectedChatMessages([]);
     }
   };
-  const handleIncomingMessage = (incomingMsg: Message) => {
-    if (selectedChat) {
-      const msg: Message = {
-        id: '',
-        senderId: userInfo.id,
-        chatId: selectedChat,
-        content: input,
-        timestamp: new Date().toISOString(),
-      };
-      setMessages((prevMessages) => [...prevMessages, msg]);
-    }
-  };
+  // const handleIncomingMessage = (incomingMsg: Message) => {
+  //   if (userInfo?.id && selectedChat) {
+  //     const msg: Message = {
+  //       id: '',
+  //       senderId: userInfo.id,
+  //       chatId: selectedChat,
+  //       content: input,
+  //       timestamp: new Date().toISOString(),
+  //     };
+  //     setMessages((prevMessages) => [...prevMessages, msg]);
+  //   }
+  // };
 
   const handleNewChatNotification = (chatNotification) => {
-    // Предполагая, что chatNotification содержит информацию о новом чате
     const newChat = JSON.parse(chatNotification.body);
-    // Обновление списка чатов
-    // ...
   };
-
-  useEffect(() => {
-    WebSocketService.connect(
-      () => WebSocketService.subscribe('/topic/newChat', handleNewChatNotification),
-      (error) => console.error(error),
-    );
-
-    return () => {
-      WebSocketService.disconnect();
-    };
-  }, []);
 
   const handleSend = () => {
     if (input.trim() !== '') {
@@ -83,20 +90,6 @@ function Chat() {
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInput(event.target.value);
   };
-
-  // useEffect(() => {
-  //   WebSocketService.connect(handleNewChatNotification);
-  //
-  //   return () => {
-  //     WebSocketService.disconnect();
-  //   };
-  // }, []);
-  //
-  // const handleNewChatNotification = (notification) => {
-  //   // Update your chat list state
-  //   // notification might contain chat details
-  //   addChatToList(notification.chat);
-  // };
 
   const [openControlPanel, setOpenControlPanel] = useState(false);
 

@@ -1,21 +1,23 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { loginUser, registerUser } from './authAction';
+import { TokenService } from '../../../../services';
 
-const userToken = localStorage.getItem('userToken') || null;
+const userToken = TokenService.getToken();
+const decodedTokenData = TokenService.decodeToken();
 
 interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
-  userInfo: any | null; // Replace 'any' with User type
+  userInfo: any | null;
   userToken: string | null;
   error: string | null;
   success: boolean;
 }
 
 const initialState: AuthState = {
-  isAuthenticated: false,
+  isAuthenticated: TokenService.isValidToken(),
   loading: false,
-  userInfo: null,
+  userInfo: decodedTokenData,
   userToken: userToken,
   error: null,
   success: false,
@@ -32,10 +34,11 @@ const authSlice = createSlice({
       state.loading = false;
       state.error = null;
       state.success = false;
+      TokenService.removeToken();
     },
     resetSuccessAuth: (state) => {
-      state.success = false; // !
-      state.isAuthenticated = true;
+      state.success = false;
+      state.isAuthenticated = TokenService.isValidToken();
     },
   },
   extraReducers: (builder) => {
@@ -44,11 +47,13 @@ const authSlice = createSlice({
         state.loading = true;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
-        state.isAuthenticated = true;
-        state.userInfo = action.payload;
+        const { user, token } = action.payload;
+        state.userInfo = user;
         state.loading = false;
-        state.userToken = action.payload.token;
+        state.userToken = token;
         state.success = true;
+        TokenService.saveToken(token);
+        state.isAuthenticated = TokenService.isValidToken();
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.error = action.payload as string;

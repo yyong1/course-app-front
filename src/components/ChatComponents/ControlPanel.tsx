@@ -15,6 +15,7 @@ import { Grid } from '@mui/material';
 import { useState } from 'react';
 import { User } from '../../utils/types/types.ts';
 import { ChatService, WebSocketService } from '../../services';
+import ToastService from '../../services/toastify/ToastService.ts';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -34,25 +35,25 @@ function ControlPanel({ setOpen, open }: ControlPanelProps) {
   const [chatName, setChatName] = useState<string>('');
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
 
-  const handleClickOpen = () => {
+  const handleClickOpen = (): void => {
     setOpen(true);
   };
 
-  const handleClose = () => {
+  const handleClose = (): void => {
     setOpen(false);
   };
 
-  const handleCreateChat = async () => {
+  const handleCreateChat = async (): Promise<void> => {
     try {
-      const newChatData = {
+      const newChatData: { chatName: string; userIds: string[] } = {
         chatName: chatName,
         userIds: selectedUsers.map((user) => user.id),
       };
       console.log('New chat data:', newChatData);
       const newChat = await ChatService.setNewChat(newChatData);
       console.log('New chat created:', newChat);
-
-      // Убедитесь, что соединение WebSocket активно
+      handleClose();
+      ToastService.success(`New chat ${newChatData.chatName} created successfully.`);
       if (WebSocketService.isConnected()) {
         WebSocketService.sendMessage('/topic/newChat', JSON.stringify(newChat));
       } else {

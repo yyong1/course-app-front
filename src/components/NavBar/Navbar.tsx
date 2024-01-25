@@ -18,7 +18,6 @@ import { openAuthModal } from '../../redux/reducers/features/modalFeature/modalS
 import { useAppDispatch, useAppSelector } from '../../redux/hooks.ts';
 import Logo from '../../assets/learnForge.svg';
 import { Link, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
 import { logout } from '../../redux/reducers/features/authFeature/authSlice.ts';
 
 const pagesUnAuth = [
@@ -29,7 +28,7 @@ const pagesAuth = [
   { name: 'Chat', path: '/chat' },
   { name: 'My courses', path: '/mycourses' },
 ];
-const settings = ['Profile', 'Account', 'Logout'];
+const settings = ['Logout'];
 
 function ResponsiveAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
@@ -44,10 +43,6 @@ function ResponsiveAppBar() {
     navigate('/');
     handleCloseUserMenu();
   };
-
-  useEffect(() => {
-    console.log(`Authentication status changed: ${isAuthenticated}`);
-  }, [isAuthenticated]);
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
