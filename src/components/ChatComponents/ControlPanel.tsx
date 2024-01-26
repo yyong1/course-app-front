@@ -14,7 +14,7 @@ import SelectUserDropList from './SelectUserDropList.tsx';
 import { Box, Grid } from '@mui/material';
 import { useState } from 'react';
 import { User } from '../../utils/types/types.ts';
-import { ChatService, WebSocketService } from '../../services';
+import { WebSocketService } from '../../services';
 import ToastService from '../../services/toastify/ToastService.ts';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
@@ -32,6 +32,7 @@ interface ControlPanelProps {
 }
 
 function ControlPanel({ setOpen, open }: ControlPanelProps) {
+  // const queryClient = useQueryClient();
   const [chatName, setChatName] = useState<string>('');
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
 
@@ -49,15 +50,13 @@ function ControlPanel({ setOpen, open }: ControlPanelProps) {
         chatName: chatName,
         userIds: selectedUsers.map((user) => user.id),
       };
-      console.log('New chat data:', newChatData);
-      const newChat = await ChatService.setNewChat(newChatData);
-      console.log('New chat created:', newChat);
       handleClose();
-      ToastService.success(`New chat ${newChatData.chatName} created successfully.`);
       if (WebSocketService.isConnected()) {
-        WebSocketService.sendMessage('/topic/newChat', JSON.stringify(newChat));
+        WebSocketService.sendMessage('/app/chat/create', JSON.stringify(newChatData));
+        ToastService.success(`New chat ${newChatData.chatName} created successfully.`);
       } else {
         console.error('WebSocket connection is not active.');
+        ToastService.error(`New chat ${newChatData.chatName} was not created.`);
       }
     } catch (error) {
       console.error('Error while creating chat:', error);

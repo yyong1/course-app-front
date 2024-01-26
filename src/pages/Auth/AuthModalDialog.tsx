@@ -18,6 +18,7 @@ import * as yup from 'yup';
 import { LoginFormData, RegisterFormData } from '../../utils/types';
 import ToastService from '../../services/toastify/ToastService.ts';
 import { resetSuccessAuth } from '../../redux/reducers/features/authFeature/authSlice.ts';
+import { TokenService } from '../../services';
 
 type FormErrors = FieldErrors<{
   username?: string;
@@ -76,6 +77,8 @@ function AuthModalDialog() {
       const registerData = { ...data, role: 'STUDENT' } as RegisterFormData;
       dispatch(registerUserThunk(registerData));
     } else {
+      console.log('Token validation --> ', TokenService.isValidToken());
+      if (!TokenService.isValidToken()) TokenService.removeToken();
       dispatch(loginUserThunk(data as LoginFormData));
     }
   };

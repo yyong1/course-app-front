@@ -4,46 +4,44 @@ import SendIcon from '@mui/icons-material/Send';
 import Message from '../../utils/types/types.ts';
 import { UserCell, MessageComponent, ControlPanel, NoMessagesYetComponent } from '../../components/ChatComponents';
 import { WebSocketService } from '../../services';
-// eslint-disable-next-line import/no-unresolved
-// import { IMessage } from '@stomp/stompjs';
 import { useChatList } from '../../hooks';
 import { useAppSelector } from '../../redux/hooks.ts';
-
-// function FixedSizeList(props: {
-//   overscanCount: number;
-//   width: number;
-//   itemSize: number;
-//   height: number;
-//   itemCount: number;
-//   children: ReactNode;
-// }) {
-//   return null;
-// }
+import TimestampFormatter from '../../services/chat/TimestampFormatter.ts';
 
 function Chat() {
   const [input, setInput] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>();
+  const [openControlPanel, setOpenControlPanel] = useState<boolean>(false);
+
   const userInfo = useAppSelector((state) => state.auth.userInfo);
+
   useEffect(() => {
     WebSocketService.connect(
-      () => WebSocketService.subscribe('/topic/newChat', handleNewChatNotification),
+      () => {
+        WebSocketService.subscribe('/user/queue/chat', handleNewChatNotification);
+        WebSocketService.subscribe('/user/queue/message', handleIncomingMessage);
+      },
       (error) => console.error(error),
     );
-
     return () => {
       WebSocketService.disconnect();
     };
   }, []);
+
   const {
     data: chatData,
     // error, isLoading, isError, refetch
   } = useChatList(userInfo?.id);
   console.log('useChatList chatData data: ', chatData);
 
-  const [selectedChat, setSelectedChat] = useState(null);
+  const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [selectedChatMessages, setSelectedChatMessages] = useState<Message[] | null>([]);
 
-  const handleChatSelection = (chatId) => {
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(event.target.value);
+  };
+
+  const handleChatSelection = (chatId: string) => {
     setSelectedChat(chatId);
     console.log(selectedChat);
     const selectedChatData = chatData.find((chat) => chat.id === chatId);
@@ -53,35 +51,44 @@ function Chat() {
       setSelectedChatMessages([]);
     }
   };
-  // const handleIncomingMessage = (incomingMsg: Message) => {
-  //   if (userInfo?.id && selectedChat) {
-  //     const msg: Message = {
-  //       id: '',
-  //       senderId: userInfo.id,
-  //       chatId: selectedChat,
-  //       content: input,
-  //       timestamp: new Date().toISOString(),
-  //     };
-  //     setMessages((prevMessages) => [...prevMessages, msg]);
-  //   }
-  // };
 
   const handleNewChatNotification = (chatNotification) => {
     const newChat = JSON.parse(chatNotification.body);
+
+    // TODO: upgrade logic
+
+    console.log('newChatNotification: ---> ', newChat);
+  };
+  const handleIncomingMessage = (message) => {
+    const msg = JSON.parse(message.body);
+
+    // TODO: upgrade logic
+
+    console.log('handleIncomingMessage: ---> ', msg);
   };
 
   const handleSend = () => {
-    if (input.trim() !== '') {
-      WebSocketService.sendMessage('/message', input);
+    if (input.trim() !== '' && selectedChat) {
+      const timestamp = TimestampFormatter(new Date());
+
+      const messageToSend = {
+        senderId: userInfo.id,
+        chatId: selectedChat,
+        content: input,
+        timestamp: timestamp,
+      };
+      console.log('messageToSend:', messageToSend);
+
+      WebSocketService.sendMessage('/app/chat/message', JSON.stringify(messageToSend));
+
+      setSelectedChatMessages((prevMessages) => [
+        ...(prevMessages || []),
+        { ...messageToSend, id: 'optimistic-' + Date.now() },
+      ]);
+
       setInput('');
     }
   };
-
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInput(event.target.value);
-  };
-
-  const [openControlPanel, setOpenControlPanel] = useState(false);
 
   return (
     <Grid container>
@@ -116,7 +123,7 @@ function Chat() {
       <Grid item xs={9}>
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '90vh', bgcolor: 'grey.200' }}>
           <Box sx={{ flexGrow: 1, overflow: 'auto', p: 2 }}>
-            {messages?.length ? (
+            {messages?.length === 0 ? (
               messages?.map((message) => <MessageComponent key={message.id} message={message} />)
             ) : (
               <NoMessagesYetComponent />
