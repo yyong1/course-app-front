@@ -1,6 +1,19 @@
 import { jwtDecode } from 'jwt-decode';
+import { appAxios } from '../index.ts';
+import { BASE_URL } from '../../utils/types/constants.ts';
 
 class TokenService {
+  private static instance: TokenService;
+
+  private constructor() {}
+
+  public static getInstance(): TokenService {
+    if (!TokenService.instance) {
+      TokenService.instance = new TokenService();
+    }
+    return TokenService.instance;
+  }
+
   getToken(): string | null {
     return localStorage.getItem('token') || null;
   }
@@ -27,11 +40,23 @@ class TokenService {
   isValidToken(): boolean {
     const decodedToken = this.decodeToken();
     if (!decodedToken) return false;
-
     const currentTime = Date.now() / 1000;
     // @ts-ignore
     return decodedToken.exp > currentTime;
   }
+
+  async refreshToken(): Promise<void> {
+    try {
+      const response = await appAxios.post(`${BASE_URL}/auth/refresh`, {
+        token: this.getToken(),
+      });
+      const { token: newToken } = response.data;
+      this.saveToken(newToken);
+    } catch (error) {
+      console.error('Error refreshing token:', error);
+      throw error;
+    }
+  }
 }
 
-export default new TokenService();
+export const tokenService = TokenService.getInstance();
