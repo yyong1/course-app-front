@@ -1,6 +1,7 @@
 import SockJS from 'sockjs-client';
 // eslint-disable-next-line import/no-unresolved
-import { Client, IMessage, Stomp } from '@stomp/stompjs';
+import { Client, IFrame, IMessage, Stomp } from '@stomp/stompjs';
+import { WebSocket } from 'vite';
 
 interface MessageCallback {
   // eslint-disable-next-line no-unused-vars
@@ -18,37 +19,38 @@ class WebsocketService {
       if (this.stompClient && this.stompClient.connected) {
         resolve();
       } else {
-        const socket = new SockJS(this.url);
+        const socket: WebSocket = new SockJS(this.url);
 
         this.stompClient = Stomp.over(socket);
 
-        this.stompClient.debug = () => {};
+        this.stompClient.debug = (): void => {};
 
         this.stompClient.connect(
           {},
-          () => {
+          (): void => {
             onConnect();
             console.log('WebSocket connected!');
             resolve();
           },
-          (error: never) => {
-            console.error('WebSocket connection failed:', error);
+          (error: never): void => {
             onError();
+            console.error('WebSocket connection failed:', error);
             reject(error);
           },
         );
+
+        this.stompClient.onStompError = (frame: IFrame): void => {
+          console.error('Broker reported error: ' + frame.headers['message']);
+          console.error('Additional details: ' + frame.body);
+        };
       }
     });
   }
 
-  subscribe(topic: string, onMessage: MessageCallback) {
+  public subscribe(channel: string, callback: (message: Stomp.Message) => void): void {
     if (this.stompClient && this.stompClient.connected) {
-      this.stompClient.subscribe(topic, (message) => {
-        onMessage(message);
-        console.log('Message received:', message);
-      });
-    } else {
-      console.error('Cannot subscribe: WebSocket connection is not active');
+      console.log('Subscribing to channel:', channel);
+      this.stompClient.subscribe(channel, callback);
     }
   }
 

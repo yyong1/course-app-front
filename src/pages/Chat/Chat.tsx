@@ -1,41 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Box, TextField, Button, Grid, List } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
-import Message from '../../utils/types/types.ts';
 import { UserCell, MessageComponent, ControlPanel, NoMessagesYetComponent } from '../../components/ChatComponents';
-import { WebSocketService } from '../../services';
+import { WebSocketService, TimestampFormatter } from '../../services';
 import { useChatList } from '../../hooks';
 import { useAppSelector } from '../../redux/hooks.ts';
-import TimestampFormatter from '../../services/chat/TimestampFormatter.ts';
+import { Chat, Message } from '../../utils/types';
+import ToastService from '../../services/toastify/ToastService.ts';
 
 function Chat() {
   const [input, setInput] = useState<string>('');
-  const [messages, setMessages] = useState<Message[]>();
   const [openControlPanel, setOpenControlPanel] = useState<boolean>(false);
-
-  const userInfo = useAppSelector((state) => state.auth.userInfo);
-
-  useEffect(() => {
-    WebSocketService.connect(
-      () => {
-        WebSocketService.subscribe('/user/queue/chat', handleNewChatNotification);
-        WebSocketService.subscribe('/user/queue/message', handleIncomingMessage);
-      },
-      (error) => console.error(error),
-    );
-    return () => {
-      WebSocketService.disconnect();
-    };
-  }, []);
-
-  const {
-    data: chatData,
-    // error, isLoading, isError, refetch
-  } = useChatList(userInfo?.id);
-  console.log('useChatList chatData data: ', chatData);
 
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [selectedChatMessages, setSelectedChatMessages] = useState<Message[] | null>([]);
+
+  const userInfo = useAppSelector((state) => state.auth.userInfo);
+  const {
+    data: chatData,
+    refetch,
+    // error, isLoading, isError, refetch
+  } = useChatList(userInfo?.id);
+  console.log('useChatList chatData data: ', chatData);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInput(event.target.value);
@@ -43,35 +29,15 @@ function Chat() {
 
   const handleChatSelection = (chatId: string) => {
     setSelectedChat(chatId);
-    console.log(selectedChat);
-    const selectedChatData = chatData.find((chat) => chat.id === chatId);
-    if (selectedChatData) {
-      setSelectedChatMessages(selectedChatData.messages || []);
-    } else {
-      setSelectedChatMessages([]);
-    }
-  };
-
-  const handleNewChatNotification = (chatNotification) => {
-    const newChat = JSON.parse(chatNotification.body);
-
-    // TODO: upgrade logic
-
-    console.log('newChatNotification: ---> ', newChat);
-  };
-  const handleIncomingMessage = (message) => {
-    const msg = JSON.parse(message.body);
-
-    // TODO: upgrade logic
-
-    console.log('handleIncomingMessage: ---> ', msg);
+    const selectedChatData = chatData?.find((chat: Chat): boolean => chat.id === chatId);
+    setSelectedChatMessages(selectedChatData?.messages || []);
   };
 
   const handleSend = () => {
     if (input.trim() !== '' && selectedChat) {
       const timestamp = TimestampFormatter(new Date());
 
-      const messageToSend = {
+      const messageToSend: { senderId: string; chatId: string; content: string; timestamp: string } = {
         senderId: userInfo.id,
         chatId: selectedChat,
         content: input,
@@ -90,30 +56,97 @@ function Chat() {
     }
   };
 
+  const addNewChat = useCallback(
+    (chatNotification) => {
+      const newChat = JSON.parse(chatNotification.body);
+      ToastService.success(`You've been added to chat - ${newChat.chatName}.`);
+      console.log('addNewChat: ', newChat);
+      refetch().then((r) => console.log('refetch() result: ', r));
+    },
+    [refetch],
+  );
+
+  const addNewMessage = useCallback(
+    (messageNotification: { body: string }): void => {
+      const newMessage = JSON.parse(messageNotification.body);
+      setSelectedChatMessages((prevMessages: Message[] | null) => {
+        if (selectedChat === newMessage.chatId) {
+          return [...(prevMessages || []), newMessage];
+        }
+        return prevMessages;
+      });
+      ToastService.success(`New message from ${newMessage.senderId} received.`);
+      console.log('addNewMessage: ', newMessage);
+    },
+    [selectedChat],
+  );
+  
+  useEffect(() => {
+    if (chatData && chatData.length > 0) {
+      const firstChatId = chatData[0].id;
+      handleChatSelection(firstChatId);
+    }
+  }, [chatData]);
+
+  useEffect(() => {
+    let reconnectInterval;
+
+    const connectWebSocket = async () => {
+      try {
+        await WebSocketService.connect();
+        // sub to the new chats where were added user
+        const newChatTopic = `/topic/new-chat/${userInfo.id}`;
+        WebSocketService.subscribe(newChatTopic, (messageNotification): void => {
+          addNewChat(messageNotification);
+        });
+        // sub for each chat
+        chatData?.forEach((chat: Chat): void => {
+          const chatTopic: string = `/topic/chat/${chat.id}`;
+          WebSocketService.subscribe(chatTopic, (notification): void => {
+            addNewMessage(notification);
+          });
+        });
+
+        console.log('WebSocket subscriptions set up successfully.');
+      } catch (error) {
+        console.error('WebSocket connection error:', error);
+        reconnectInterval = setInterval(() => {
+          WebSocketService.connect().catch(console.error);
+        }, 5000);
+      }
+    };
+
+    connectWebSocket().then((r) => console.log('connectWebSocket() result: ', r));
+
+    return () => {
+      clearInterval(reconnectInterval);
+      WebSocketService.disconnect();
+      console.log('WebSocket disconnected.');
+    };
+  }, [addNewChat, addNewMessage, chatData, userInfo.id]);
+
   return (
     <Grid container>
       <Grid item xs={3}>
         <Box sx={{ w: 10 }}>
           <ControlPanel open={openControlPanel} setOpen={setOpenControlPanel} />
         </Box>
-        {/*</Grid>*/}
-        {/*  <Autocomplete*/}
-        {/*    options={users}*/}
-        {/*    getOptionLabel={(option) => option.name}*/}
-        {/*    renderInput={(params) => <TextField {...params} label="Start a chat with" />}*/}
-        {/*    onChange={(event, newValue) => {*/}
-        {/*      handleCreateChat(newValue);*/}
-        {/*    }}*/}
-        {/*  />*/}
-        {/*  <TextField fullWidth label="Search for chats" value={searchQuery} onChange={handleSearch} />*/}
         <List sx={{ height: 'auto', overflow: 'auto', p: 0 }}>
           {chatData?.map((chat) => (
             <UserCell
               key={chat.id}
-              name={chat.messages && chat.messages.length > 0 ? chat.messages[0].text : 'No messages yet'}
+              name={
+                chat.messages && chat.messages.length > 0
+                  ? chat.messages[chat.messages.length - 1].content
+                  : 'No messages yet'
+              }
               avatarSrc="/static/images/avatar/1.jpg"
               primaryText={chat.chatName}
-              secondaryText={chat.messages && chat.messages.length > 0 ? chat.messages[0].text : 'No messages yet'}
+              secondaryText={
+                chat.messages && chat.messages.length > 0
+                  ? chat.messages[chat.messages.length - 1].content
+                  : 'No messages yet'
+              }
               onClick={() => handleChatSelection(chat.id)}
               selected={selectedChat === chat.id}
             />
@@ -123,8 +156,8 @@ function Chat() {
       <Grid item xs={9}>
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '90vh', bgcolor: 'grey.200' }}>
           <Box sx={{ flexGrow: 1, overflow: 'auto', p: 2 }}>
-            {messages?.length === 0 ? (
-              messages?.map((message) => <MessageComponent key={message.id} message={message} />)
+            {selectedChatMessages?.length > 0 ? (
+              selectedChatMessages?.map((message) => <MessageComponent key={message.id} message={message} />)
             ) : (
               <NoMessagesYetComponent />
             )}

@@ -13,9 +13,9 @@ export interface Course {
 }
 
 export interface Chat {
-  id: number;
-  name: string;
-  users: User[];
+  id: string;
+  chatName: string;
+  userIds: string[];
   messages: Message[];
 }
 

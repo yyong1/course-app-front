@@ -8,9 +8,19 @@ const appAxios = axios.create({
 });
 
 appAxios.interceptors.request.use(
-  (config) => {
-    const token = TokenService.getToken();
-    if (token) {
+  async (config) => {
+    let token = TokenService.getToken();
+
+    if (token && !TokenService.isValidToken()) {
+      try {
+        await TokenService.refreshToken();
+        token = TokenService.getToken();
+      } catch (error) {
+        console.error('Token refresh failed:', error);
+      }
+    }
+
+    if (token && TokenService.isValidToken()) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
     return config;
