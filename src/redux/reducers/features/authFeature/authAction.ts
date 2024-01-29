@@ -31,3 +31,25 @@ export const registerUser = createAsyncThunk('auth/register', async (data: Regis
     }
   }
 });
+
+export const authOauth2Google = createAsyncThunk('auth/oauth2/google', async (payload, { rejectWithValue }) => {
+  try {
+    console.log('OAuth2 Google Login --->', payload);
+    const response = await appAxios.post('/auth/oauth2/google', {
+      payload,
+    });
+    console.log('response data ---> ', response.data);
+    const { jwtToken, userId: id, ...restOfUserDetails } = response.data;
+    const userDetails = { id, ...restOfUserDetails };
+    console.log('OAuth2 Google Login success', userDetails);
+    console.log('OAuth2 Google Login success', jwtToken);
+    return { user: userDetails, token: jwtToken };
+  } catch (error: any) {
+    if (error.response && error.response.data.message) {
+      console.log('OAuth2 Google Login failed:', error.response.data.message);
+      return rejectWithValue(error.response.data.message);
+    } else {
+      return rejectWithValue(error.message);
+    }
+  }
+});

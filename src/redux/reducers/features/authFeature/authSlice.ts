@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { loginUser, registerUser } from './authAction';
+import { loginUser, registerUser, authOauth2Google } from './authAction';
 import { TokenService } from '../../../../services';
 
 const userToken = TokenService.getToken();
@@ -69,6 +69,23 @@ const authSlice = createSlice({
       .addCase(registerUser.rejected, (state, action) => {
         state.error = action.payload as string;
         state.loading = false;
+      })
+      .addCase(authOauth2Google.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(authOauth2Google.fulfilled, (state, action) => {
+        const { user, token } = action.payload;
+        state.userInfo = user;
+        state.userToken = token;
+        state.isAuthenticated = true;
+        state.loading = false;
+        state.success = true;
+        TokenService.saveToken(token);
+      })
+      .addCase(authOauth2Google.rejected, (state, action) => {
+        state.error = action.payload as string;
+        state.loading = false;
+        state.isAuthenticated = false;
       });
   },
 });

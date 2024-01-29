@@ -1,11 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Checkbox, Stack, DialogContent, DialogTitle, ModalDialog, Modal, FormControl, Button } from '@mui/joy';
-import { FormControlLabel, TextField } from '@mui/material';
+import { FormControlLabel, TextField, Typography } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { closeAuthModal } from '../../redux/reducers/features/modalFeature/modalSlice';
 import {
   registerUser as registerUserThunk,
   loginUser as loginUserThunk,
+  authOauth2Google as authOauth2GoogleThunk,
 } from '../../redux/reducers/features/authFeature/authAction';
 
 import {
@@ -19,6 +20,7 @@ import { LoginFormData, RegisterFormData } from '../../utils/types';
 import ToastService from '../../services/toastify/ToastService.ts';
 import { resetSuccessAuth } from '../../redux/reducers/features/authFeature/authSlice.ts';
 import { TokenService } from '../../services';
+import { useGoogleLogin } from '@react-oauth/google';
 
 type FormErrors = FieldErrors<{
   username?: string;
@@ -46,8 +48,9 @@ function AuthModalDialog() {
   const navigate = useNavigate();
   const { success, error } = useAppSelector((state) => state.auth);
   const { isOpen, authMode } = useAppSelector((state) => state.modal);
+  const [isSignUp, setIsSignUp] = useState<boolean>(authMode === 'signUp');
 
-  const isSignUp = authMode === 'signUp';
+  // let isSignUp = authMode === 'signUp';
 
   const {
     register,
@@ -56,21 +59,8 @@ function AuthModalDialog() {
   } = useForm<RegisterFormData | LoginFormData>({
     resolver: yupResolver(isSignUp ? signUpSchema : signInSchema),
   });
-  const formErrors = errors as FormErrors;
 
-  useEffect(() => {
-    if (success) {
-      const message = isSignUp ? 'Sign up successful! Login in your account.' : 'Login successful!';
-      ToastService.success(message);
-      dispatch(closeAuthModal());
-      if (!isSignUp) {
-        navigate('/chat');
-        dispatch(resetSuccessAuth());
-      }
-    } else if (error) {
-      ToastService.error(`Error: ${error}`);
-    }
-  }, [success, error, isSignUp, dispatch, navigate]);
+  const formErrors = errors as FormErrors;
 
   const onSubmit = (data: RegisterFormData | LoginFormData) => {
     if (authMode === 'signUp') {
@@ -83,6 +73,30 @@ function AuthModalDialog() {
     }
   };
 
+  const authGoogle = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      dispatch(authOauth2GoogleThunk(tokenResponse));
+      console.log(tokenResponse);
+      setIsSignUp(false);
+      console.log('isSignUp authGoogle: ', isSignUp);
+    },
+    flow: 'auth-code',
+  });
+
+  useEffect(() => {
+    if (success) {
+      const message = isSignUp ? 'Sign up successful! Login in your account.' : 'Login successful!';
+      ToastService.success(message);
+      dispatch(closeAuthModal());
+      console.log('isSignUp useEffect: ', isSignUp);
+      if (!isSignUp) {
+        navigate('/chat');
+        dispatch(resetSuccessAuth());
+      }
+    } else if (error) {
+      ToastService.error(`Error: ${error}`);
+    }
+  }, [success, error, authMode, dispatch, navigate, authGoogle]);
   return (
     <Modal open={isOpen} onClose={() => dispatch(closeAuthModal())}>
       <ModalDialog>
@@ -142,6 +156,8 @@ function AuthModalDialog() {
             {/*<Button onClick={toggleAuthMode}>*/}
             {/*  {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}*/}
             {/*</Button>*/}
+            <Typography>OR</Typography>
+            <Button onClick={() => authGoogle()}>Auth with Google</Button>
           </Stack>
         </form>
       </ModalDialog>
