@@ -1,4 +1,3 @@
-/* App.css или index.css */
 html, body, #root {
     margin: 0;
     padding: 0;
@@ -9,8 +8,6 @@ html, body, #root {
 
 
 .page-container {
-    padding-top: 64px;
-    margin-top: -64px;
     height: calc(100vh - 64px);
     overflow: auto;
 }

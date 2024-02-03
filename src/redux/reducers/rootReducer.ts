@@ -1,8 +1,10 @@
 import { combineReducers } from '@reduxjs/toolkit';
-import featureReducer from './features/featureTest/slice';
+import authReducer from './features/authFeature/authSlice';
+import modal from './features/modalFeature/modalSlice';
 
 const rootReducer = combineReducers({
-  feature: featureReducer,
+  auth: authReducer,
+  modal,
 });
 
 export default rootReducer;

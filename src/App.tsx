@@ -1,17 +1,17 @@
-import { Route, Routes } from 'react-router-dom';
 import Navbar from './components/NavBar';
-import About from './pages/About/About.tsx';
-import { Chat } from './pages';
+import AppRoutes from './routes/AppRoutes';
+import AuthModalDialog from './pages/Auth/AuthModalDialog.tsx';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   return (
     <>
       <Navbar />
       <div className="page-container">
-        <Routes>
-          <Route path="/about" element={<About />} />
-          <Route path="/chat" element={<Chat />} />
-        </Routes>
+        <AppRoutes />
+        <AuthModalDialog />
+        <ToastContainer />
       </div>
     </>
   );
